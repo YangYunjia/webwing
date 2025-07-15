@@ -1,0 +1,43 @@
+body {
+  display: flex;
+  font-family: sans-serif;
+}
+#sidebar {
+  width: 200px;
+  padding: 10px;
+  border-right: 1px solid #ccc;
+}
+#main {
+  flex-grow: 1;
+  padding: 10px;
+}
+#plot {
+  width: 100%;
+  height: 600px;
+}
+.tabs {
+    display: flex;
+    margin-bottom: 10px;
+}
+
+.tab {
+    flex: 1;
+    padding: 10px;
+    text-align: center;
+    background: #f0f0f0;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.tab.active {
+    background: white;
+    border-bottom: none;
+    font-weight: bold;
+}
+
+.tab-content {
+    border: 1px solid #ccc;
+    padding: 10px;
+    background: white;
+}

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>3D Viewer</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style/style.css') }}">
+</head>
+<body>
+ <div id="sidebar">
+    <h3>选择图形</h3>
+    <div class="tabs">
+      <div class="tab active" data-shape="sphere">球体</div>
+      <div class="tab" data-shape="cube">正方体</div>
+    </div>
+
+    <label>Azimuth:</label><br>
+    <input type="range" min="0" max="360" value="45" id="azimuth"><br>
+    <label>Elevation:</label><br>
+    <input type="range" min="0" max="90" value="30" id="elevation"><br>
+    <label>Zoom:</label><br>
+    <input type="range" min="0.5" max="3" value="1" step="0.01" id="zoom"><br>
+  </div>
+
+  <div id="main">
+    <div id="plot"></div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

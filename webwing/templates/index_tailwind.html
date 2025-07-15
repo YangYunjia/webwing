@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>3D Viewer - Tailwind</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+
+<body class="bg-gray-100 text-gray-800">
+
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <div class="w-64 p-6 bg-white shadow-xl">
+            <h2 class="text-2xl font-bold mb-4">WebWing</h2>
+            <label class="block">v0.1</label>
+            <label class="block font-medium">Author: Yunjia Yang</label>
+            <!-- Tabs -->
+            <div class="flex flex-col space-y-2 mb-6 mt-6">
+                <button class="tab-btn active-tab bg-blue-500 text-white px-4 py-2 rounded-md font-medium" data-shape="pred">Prediction</button>
+                <button class="tab-btn bg-gray-200 text-gray-800 px-4 py-2 rounded-md font-medium" data-shape="dsgn">Design</button>
+            </div>
+            <!-- Logo -->
+            <div class="mt-6">
+                <img id="logo" class="w-full h-full bg-white rounded-xl shadow-md" src="/static/image/logo.png" alt="Logo">
+            </div>
+        </div>
+        
+        <div class="flex w-128 p-6">
+            <!-- Sectional Airfoil Parameters -->
+            <div class="h-128 p-6">
+                <h3 class="text-xl font-semibold text-gray-800">Sectional Airfoil Parameters</h3>
+
+                <!-- Select -->
+                <div class="space-y-1">
+                    <label for="airfoil-select" class="block text-sm font-medium text-gray-700">Select from</label>
+                    <select id="airfoil-select" class="w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
+                    <!-- Options inserted dynamically -->
+                    </select>
+                </div>
+
+                <!-- CSTU -->
+                <div class="space-y-1">
+                    <label for="cstu" class="block text-sm font-medium text-gray-700">CSTU</label>
+                    <textarea id="cstu" rows="3" class="w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm resize-none"></textarea>
+                </div>
+
+                <!-- CSTL -->
+                <div class="space-y-1">
+                    <label for="cstl" class="block text-sm font-medium text-gray-700">CSTL</label>
+                    <textarea id="cstl" rows="3" class="w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm resize-none"></textarea>
+                </div>
+
+                <!-- Root Thickness -->
+                <div class="space-y-1">
+                    <label for="root-thickness" class="block text-sm font-medium text-gray-700">Root Thickness</label>
+                    <div class="flex w-16 space-x-1">
+                        <input type="number" id="root-thickness-value" value="0.0805" min="0" max="1" step="0.001"
+                            class="w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
+                        <input type="range" id="root-thickness" min="0" max="1" step="0.001" value="0.0805"
+                            class="w-full accent-blue-500">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex-grow p-6">
+
+            <!-- Airfoil Geometry -->
+            <div class="w-128 bg-gray-50 text-gray-800 p-8">
+
+                <h1 class="font-bold mb-4">Airfoil Geometry</h1>
+
+                <div id="line-chart" class="w-full h-[400px] bg-white rounded-xl shadow-md"></div>
+
+            </div>
+
+            <!-- Wing Planform Parameters -->
+            <div class="box">
+            <h3>Wing Planform Parameters</h3>
+            <div class="parameter-row">
+                <label for="swept-angle">Swept Angle</label>
+                <input type="number" id="swept-angle-value" value="0.1614" min="0" max="10" step="0.001">
+                <input type="range" id="swept-angle" min="0" max="10" step="0.001" value="0.1614">
+            </div>
+            <div class="parameter-row">
+                <label for="dihedral-angle">Dihedral Angle</label>
+                <input type="number" id="dihedral-angle-value" value="1.565" min="0" max="10" step="0.001">
+                <input type="range" id="dihedral-angle" min="0" max="10" step="0.001" value="1.565">
+            </div>
+            <div class="parameter-row">
+                <label for="aspect-ratio">Aspect Ratio</label>
+                <input type="number" id="aspect-ratio-value" value="9.43" min="0" max="10" step="0.001">
+                <input type="range" id="aspect-ratio" min="0" max="10" step="0.001" value="9.43">
+            </div>
+            <div class="parameter-row">
+                <label for="tapper-ratio">Taper Ratio</label>
+                <input type="number" id="tapper-ratio-value" value="0.766" min="0" max="10" step="0.001">
+                <input type="range" id="tapper-ratio" min="0" max="10" step="0.001" value="0.766">
+            </div>
+            <div class="parameter-row">
+                <label for="tip-angle">Tip Twist Angle</label>
+                <input type="number" id="tip-angle-value" value="0.833" min="0" max="10" step="0.001">
+                <input type="range" id="tip-angle" min="0" max="10" step="0.001" value="0.833">
+            </div>
+            <div class="parameter-row">
+                <label for="thickness-ratio">Tip-to-root Thickness Ratio</label>
+                <input type="number" id="thickness-ratio-value" value="0.905" min="0" max="10" step="0.001">
+                <input type="range" id="thickness-ratio" min="0" max="10" step="0.001" value="0.905">
+            </div>
+            </div>
+
+            <!-- Wing Shape -->
+            <div class="box">
+            <h3>Wing Shape</h3>
+            <div class="plot">
+                <img id="display_wing_frame" class="outputImage" src="" alt="Wing Shape">
+            </div>
+            </div>
+
+            <!-- Operating Conditions -->
+            <div class="box">
+            <h3>Operating Conditions</h3>
+            <div class="parameter-row">
+                <label for="aoa">AoA</label>
+                <input type="number" id="aoa-value" value="3.52" min="0" max="10" step="0.001">
+                <input type="range" id="aoa" min="0" max="10" step="0.01" value="3.52">
+            </div>
+            <div class="parameter-row">
+                <label for="mach">Mach</label>
+                <input type="number" id="mach-value" value="0.736" min="0" max="1" step="0.001">
+                <input type="range" id="mach" min="0" max="1" step="0.001" value="0.736">
+            </div>
+            <h3>Coefficients Result</h3>
+            <div class="parameter-row">
+                <label for="CL">CL</label>
+                <p id="CL"></p>
+            </div>
+            <div class="parameter-row">
+                <label for="CD">CD</label>
+                <p id="CD"></p>
+            </div>
+            <div class="parameter-row">
+                <label for="CM">CM</label>
+                <p id="CM"></p>
+            </div>
+            </div>
+
+            <!-- Predict Wing Flowfield -->
+            <div class="box">
+            <h3>Predict Wing Flowfield</h3>
+            <div class="plot">
+                <img id="predict_wing_flowfield" class="outputImage" src=""
+                alt="Wing Flowfield">
+            </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+</body>
+
+</html>
