@@ -9,7 +9,7 @@ let cstl = [-0.150880952, -0.051869412, -0.225091367, -0.04184105, -0.294681513,
 let t = 0.075933877;
 let   ctrlX = [];
 let   ctrlY = [];
-let   showPoints = true;
+let   showPoints = false;
 let   draggedPoint = -1;
 const draggedPointIndx = Array.from({ length: nCtrl }, (_, i) => Math.round((i + 1) * nn / (nCtrl + 1)));
 const sigma = 0.3;
@@ -129,13 +129,10 @@ document.getElementById('airfoil-plot').addEventListener('mousemove', function (
     }
 });
 
-// start and end toggle
+// start and end modify
 const toggleBtn = document.getElementById('toggle-btn');
 toggleBtn.addEventListener('click', function () {
     showPoints = !showPoints;
-    toggleBtn.textContent = showPoints ? '隐藏控制点' : '显示控制点';
-    toggleBtn.className = showPoints
-    ? 'bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md mb-4'
-    : 'bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-md mb-4';
+    toggleBtn.textContent = showPoints ? 'Confirm' : 'Modify airfoil';
     show_airfoil();
 });
