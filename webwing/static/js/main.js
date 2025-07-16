@@ -57,8 +57,10 @@ function populateDropdown(data) {
     dropdown.addEventListener('change', function () {
     var subArray1 = data[dropdown.value].slice(1, 9);
     var subArray2 = data[dropdown.value].slice(10, 31);
+    cstu = data[dropdown.value].slice(11, 21);
+    cstl = data[dropdown.value].slice(21, 31);
+    t    = data[dropdown.value][10];
     inputs = subArray1.concat(subArray2);
-    console.log(inputs);
     populateValue(inputs);
     });
 }

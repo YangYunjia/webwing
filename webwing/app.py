@@ -13,32 +13,22 @@ from cst_modeling.section import cst_foil, cst_foil_fit, clustcos
 
 app = Flask(__name__)
 
-csts = []
-
-@app.route('/update_cst', methods=['POST'])
-def handle_update_cst():
-    global csts
+@app.route('/cst_foil', methods=['POST'])
+def handle_cst_foil():
     # get csts direct from UI
     data = request.get_json()
-    csts = [data['inputs'][1:11], data['inputs'][11:], data['inputs'][0]]
-    return jsonify({"status": "received"})
-
-@app.route('/display_sectional_airfoil', methods=['GET'])
-def handle_display_sectional_airfoil():
-    global csts
     nx = 501
-    xx, yu, yl, _, _ = cst_foil(nx, csts[0], csts[1], x=None, t=csts[2], tail=0.004)
+    xx, yu, yl, _, _ = cst_foil(nx, data['cstu'], data['cstl'], x=None, t=data['t'], tail=0.004)
     return jsonify({"x": xx.tolist(), "yu": yu.tolist(), "yl": yl.tolist()})
 
-@app.route('/modify_sectional_airfoil', methods=['POST'])
-def handle_modify_sectional_airfoil():
+@app.route('/cst_fit', methods=['POST'])
+def handle_cst_fit():
     # 获取前端发送的JSON数据
     data = request.get_json()
-    inputs = data['inputs']  # 获取输入的 inputs[9:] 部分
-    
-    nx = 501
-    xx, yu, yl, _, _ = cst_foil(nx, inputs[1:11], inputs[11:], x=None, t=inputs[0], tail=0.004)
-    return jsonify({"x": xx.tolist(), "yu": yu.tolist(), "yl": yl.tolist()})
+
+    cstu, cstl = cst_foil_fit(np.array(data['xx']), np.array(data['yu']), np.array(data['xx']), np.array(data['yl']), n_cst=10)
+
+    return jsonify({"cstu": cstu.tolist(), "cstl": cstl.tolist()})
 
 @app.route('/display_wing_frame', methods=['POST'])
 def handle_display_wing_frame():
