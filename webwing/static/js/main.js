@@ -85,11 +85,12 @@ function populateValue(inputs_value) {
     document.getElementById('cstu').value = inputs_value.slice(9, 19).toString();
     document.getElementById('cstl').value = inputs_value.slice(19, 29).toString();
     display_sectional_airfoil();
-    display_wing_frame();
+    // display_wing_frame();
     // update_predict();
 }
 
 populateValue(inputs);
+console.log(xx)
 
 function update_image(id, index) {
     const element = document.getElementById(id);
@@ -111,40 +112,6 @@ function update_image(id, index) {
     else if (index >= 2 & index <= 7) {
     display_wing_frame();
     }
-}
-
-function display_sectional_airfoil() {
-
-    console.log("display_sectional_airfoil")
-    // Send airfoil request to flask backend
-    fetch('/display_sectional_airfoil', {
-        method: 'POST',
-        headers: {
-        'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ inputs: inputs.slice(8)})  // send inputs[9:] parameters (airfoil CSTs)
-    })
-    .then(response => response.json())
-    .then(data => {
-        const trace = {
-            x: data.x,
-            y: data.y,
-            mode: 'lines',
-            type: 'scatter',
-            line: { color: 'black' },
-            marker: { size: 6 }
-        };
-        const layout = {
-            xaxis: { title: 'x' },
-            yaxis: { title: 'y' },
-            margin: { t: 40, l: 50, r: 30, b: 50 }
-        };
-
-        Plotly.newPlot('line-chart', [trace], layout);
-    })
-    .catch(error => {
-    console.error('Error:', error);  // error
-    });
 }
 
 function display_wing_frame() {
@@ -235,4 +202,4 @@ function value_change() {
     });
 }
 
-value_change();
+// value_change();

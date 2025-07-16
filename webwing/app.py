@@ -9,18 +9,36 @@ from flask import Flask, render_template, request, jsonify
 import numpy as np
 wing_api = None
 # wing_api = Wing_api(saves_folder='saves', device='default')
+from cst_modeling.section import cst_foil, cst_foil_fit, clustcos
 
 app = Flask(__name__)
 
-@app.route('/display_sectional_airfoil', methods=['POST'])
+csts = []
+
+@app.route('/update_cst', methods=['POST'])
+def handle_update_cst():
+    global csts
+    # get csts direct from UI
+    data = request.get_json()
+    csts = [data['inputs'][1:11], data['inputs'][11:], data['inputs'][0]]
+    return jsonify({"status": "received"})
+
+@app.route('/display_sectional_airfoil', methods=['GET'])
 def handle_display_sectional_airfoil():
+    global csts
+    nx = 501
+    xx, yu, yl, _, _ = cst_foil(nx, csts[0], csts[1], x=None, t=csts[2], tail=0.004)
+    return jsonify({"x": xx.tolist(), "yu": yu.tolist(), "yl": yl.tolist()})
+
+@app.route('/modify_sectional_airfoil', methods=['POST'])
+def handle_modify_sectional_airfoil():
     # 获取前端发送的JSON数据
     data = request.get_json()
     inputs = data['inputs']  # 获取输入的 inputs[9:] 部分
     
     nx = 501
     xx, yu, yl, _, _ = cst_foil(nx, inputs[1:11], inputs[11:], x=None, t=inputs[0], tail=0.004)
-    return jsonify({"image": f"data:image/png;base64,{data}"})
+    return jsonify({"x": xx.tolist(), "yu": yu.tolist(), "yl": yl.tolist()})
 
 @app.route('/display_wing_frame', methods=['POST'])
 def handle_display_wing_frame():
