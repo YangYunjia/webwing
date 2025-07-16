@@ -4,9 +4,6 @@ const nCtrl = 9
 let xx = [];
 let yu = [];
 let yl = [];
-let cstu = [ 0.127281896,  0.127509615,  0.249741682,  0.080180633, 0.253380644,  0.204942075,  0.202460864,  0.158514521, 0.300305704, 0.032347114];
-let cstl = [-0.150880952, -0.051869412, -0.225091367, -0.04184105, -0.294681513, -0.103190222, -0.094203569, -0.208170602, 0.2,         0.076282995];
-let t = 0.075933877;
 let   ctrlX = [];
 let   ctrlY = [];
 let   showPoints = false;
@@ -40,8 +37,15 @@ function show_airfoil(){
             x: ctrlX, y: ctrlY, mode: 'markers', marker: { color: 'red', size: 10 }, name: '控制点'
         });
     }
-
     Plotly.react('airfoil-plot', plotData, layout);
+}
+
+function update_bar_values_airfoil() {
+
+    document.getElementById('root-thickness').value  = t;
+    document.getElementById('root-thickness-value').value = t;
+    document.getElementById('cstu').value = cstu.toString();
+    document.getElementById('cstl').value = cstl.toString();
 }
 
 function display_sectional_airfoil() {
@@ -79,6 +83,7 @@ function cst_fit() {
     .then(data => {
         cstu = data.cstu;
         cstl = data.cstl;
+        update_bar_values_airfoil();
         display_sectional_airfoil();
     })
     .catch(error => {console.error('Error:', error);  // error
@@ -86,53 +91,56 @@ function cst_fit() {
 
 }
 
-show_airfoil()
-
-// 启用 Plotly 拖动事件监听
-document.getElementById('airfoil-plot').on('plotly_click', function (plotData) {
-    if (!showPoints) return;
-
-    if (draggedPoint > -1) {
-        draggedPoint = -1
-        cst_fit()
-    }
-    else {
-        if (plotData.points.length && plotData.points[0].curveNumber === 2) {
-            draggedPoint = plotData.points[0].pointIndex;
-        }
-    }
-    console.log(draggedPoint)
-});
-
-document.getElementById('airfoil-plot').addEventListener('mousemove', function (e) {
-    if (draggedPoint !== -1) {
-        const chart = document.getElementById('airfoil-plot');
-        const bb = chart.getBoundingClientRect();
-        // const x = (e.clientX - bb.left) / bb.width * 5;
-        const y = ymax - ((e.clientY - bb.top) / bb.height) * yHeight;
-        
-        x0 = xx[draggedPointIndx[draggedPoint]]
-        dy = Math.max(0, Math.min(0.2, y)) - yu[draggedPointIndx[draggedPoint]]; // 
-        
-        const range = Math.min(x0, 1 - x0, 0.2);
-        for (let j = 0; j < xx.length; j++) {
-            const d = Math.abs(xx[j] - x0);
-            if (d <= range) {
-                const b = Math.pow(1 - Math.pow(d / range, 2), 2)
-                yu[j] += dy * b;
-            }
-            // const g = Math.exp(-Math.pow((xx[j] - x0), 2) / (2 * sigma * sigma));
-            // const w = Math.max(1 - Math.abs(xx[j] - x0) / range, 0)
-            // yu[j] += dy * g * w;
-        }
-        show_airfoil();
-    }
-});
-
-// start and end modify
-const toggleBtn = document.getElementById('toggle-btn');
-toggleBtn.addEventListener('click', function () {
-    showPoints = !showPoints;
-    toggleBtn.textContent = showPoints ? 'Confirm' : 'Modify airfoil';
+function create_airfoil_plot() {
     show_airfoil();
-});
+
+    // 启用 Plotly 拖动事件监听
+    document.getElementById('airfoil-plot').on('plotly_click', function (plotData) {
+        if (!showPoints) return;
+
+        if (draggedPoint > -1) {
+            draggedPoint = -1
+            cst_fit()
+        }
+        else {
+            if (plotData.points.length && plotData.points[0].curveNumber === 2) {
+                draggedPoint = plotData.points[0].pointIndex;
+            }
+        }
+        console.log(draggedPoint)
+    });
+
+    document.getElementById('airfoil-plot').addEventListener('mousemove', function (e) {
+        if (draggedPoint !== -1) {
+            const chart = document.getElementById('airfoil-plot');
+            const bb = chart.getBoundingClientRect();
+            // const x = (e.clientX - bb.left) / bb.width * 5;
+            const y = ymax - ((e.clientY - bb.top) / bb.height) * yHeight;
+            
+            x0 = xx[draggedPointIndx[draggedPoint]]
+            dy = Math.max(0, Math.min(0.2, y)) - yu[draggedPointIndx[draggedPoint]]; // 
+            
+            const range = Math.min(x0, 1 - x0, 0.2);
+            for (let j = 0; j < xx.length; j++) {
+                const d = Math.abs(xx[j] - x0);
+                if (d <= range) {
+                    const b = Math.pow(1 - Math.pow(d / range, 2), 2)
+                    yu[j] += dy * b;
+                }
+                // const g = Math.exp(-Math.pow((xx[j] - x0), 2) / (2 * sigma * sigma));
+                // const w = Math.max(1 - Math.abs(xx[j] - x0) / range, 0)
+                // yu[j] += dy * g * w;
+            }
+            show_airfoil();
+        }
+    });
+
+    // start and end modify
+    const toggleBtn = document.getElementById('toggle-btn');
+    toggleBtn.addEventListener('click', function () {
+        showPoints = !showPoints;
+        toggleBtn.textContent = showPoints ? 'Confirm' : 'Modify airfoil';
+        show_airfoil();
+    });
+
+}
