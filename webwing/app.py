@@ -10,6 +10,7 @@ import numpy as np
 wing_api = None
 # wing_api = Wing_api(saves_folder='saves', device='default')
 from cst_modeling.section import cst_foil, cst_foil_fit, clustcos
+from cfdpost.wing.basic import reconstruct_surface_frame, points2line
 
 app = Flask(__name__)
 
@@ -34,19 +35,34 @@ def handle_cst_fit():
 def handle_display_wing_frame():
     # 获取前端发送的JSON数据
     data = request.get_json()
-    inputs = data['inputs']  # 获取输入的 inputs[9:] 部分
 
-    # 调用 wing_api 的 display_sectional_airfoil 函数，生成图片
-    fig = Figure(figsize=(5, 5), dpi=60)
-    ax = fig.add_subplot(projection='3d')
-    ax = wing_api.display_wing_frame(ax, inputs)
+    sa0, da0, ar, tr, tw, tcr = data['planform']
+    troot = data['t']
+    cst_u = data['cstu']
+    cst_l = data['cstl']
 
-    buf = BytesIO()
-    fig.savefig(buf, format="png")
+    hs = 0.5 * ar * (1 + tr)
+    g = {
+        'tip_twist_angle': tw,
+        'tapper_ratio': tr,
+        'half_span': hs,
+        'swept_angle': sa0,
+        'dihedral_angle': da0
+    }
+    nx = 51
 
-    # 返回图片，供前端使用
-    data = base64.b64encode(buf.getbuffer()).decode("ascii")
-    return jsonify({"image": f"data:image/png;base64,{data}"})
+    xxs, yys = reconstruct_surface_frame(nx, [cst_u, cst_u], [cst_l, cst_l], [troot, troot * tcr], g)
+
+    lines = []
+    # tip and root section airfoil
+    lines.append([xxs[0].tolist(), [0 for _ in xxs[0]], yys[0].tolist()])
+    lines.append([xxs[1].tolist(), [hs for _ in xxs[0]], yys[1].tolist()])
+
+    # leading and tailing edges
+    for ix in [0, nx-1, -1]:
+        lines.append(list(points2line(p1=[xxs[0][ix], 0, yys[0][ix]], p2=[xxs[1][ix], hs, yys[1][ix]])))
+
+    return jsonify({"lines": lines})
 
 @app.route('/predict_wing_flowfield', methods=['POST'])
 def handle_predict_wing_flowfield():
@@ -112,6 +128,7 @@ def data():
             'y': y.tolist(),
             'z': z.tolist()
         })
+
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,6 +1,7 @@
 
-const slider_ids = ['aoa', 'mach', 'swept-angle', 'dihedral-angle', 'aspect-ratio', 'tapper-ratio', 'tip-angle', 'thickness-ratio', 'root-thickness'];
-const value_ids = Array.from({ length: slider_ids.length }, (_, i) => slider_ids[i] + '-value');
+const slider_names = ['AoA', 'Mach', 'Sweep angle', 'Dihedral angle', 'Aspect ratio', 'tapper-ratio', 'tip-angle', 'thickness-ratio', 'root-thickness'];
+const slider_ids   = ['aoa', 'mach', 'swept-angle', 'dihedral-angle', 'aspect-ratio', 'tapper-ratio', 'tip-angle', 'thickness-ratio', 'root-thickness'];
+const value_ids    = Array.from({ length: slider_ids.length }, (_, i) => slider_ids[i] + '-value');
 
 let cstu = [], cstl = [], t = 0.0;
 let planform = [], condition = [];
@@ -8,25 +9,11 @@ let planform = [], condition = [];
 let lastUpdated = 0;
 let lastPredict = 0;
 
-// Sync input[type="number"] and input[type="range"]
-const bindInput = (numberInputId, rangeInputId) => {
-    const numberInput = document.getElementById(numberInputId);
-    const rangeInput = document.getElementById(rangeInputId);
-
-    numberInput.addEventListener('input', function () {
-    rangeInput.value = numberInput.value;
-    });
-
-    rangeInput.addEventListener('input', function () {
-    numberInput.value = rangeInput.value;
-    });
-};
-
 function selectDropdown(data) {
 
     // get parameters from value
     condition = data.slice(1, 3);
-    planform = data.slice(3, 10);
+    planform = data.slice(3, 9);
     cstu = data.slice(11, 21);
     cstl = data.slice(21, 31);
     t    = data[10];
@@ -39,7 +26,7 @@ function selectDropdown(data) {
     }
     update_bar_values_airfoil();
     display_sectional_airfoil();
-    // display_wing_frame();
+    display_wing_frame();
     // update_predict();
 
 }
@@ -64,29 +51,98 @@ function createDropdown(data) {
 }
 
 // Construct sliders
-function createSliders(data) {
+function create_slider_element(data, index) {
+    id = slider_ids[index]
+    valMin = data[index + 1].min
+    valMax = data[index + 1].max
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'mb-1';
+
+    const label = document.createElement('label');
+    label.setAttribute('for', `${id}-value`);
+    label.className = 'block text-sm font-medium text-gray-700 mb-1';
+    label.innerText = slider_names[index];
+
+    const valueWrapper = document.createElement('div');
+    valueWrapper.className = 'flex w-full space-x-1'
+
+    const inputNumber = document.createElement('input');
+    inputNumber.type = 'number';
+    inputNumber.id = `${id}-value`;
+    inputNumber.value = valMin;
+    inputNumber.min = valMin;
+    inputNumber.max = valMax;
+    inputNumber.step = (valMax - valMin) / 1000;
+    inputNumber.className = 'w-24 mb-1 px-2 py-1 border text-sm rounded-md shadow-sm focus:ring focus:ring-indigo-200';
+
+    const inputRange = document.createElement('input');
+    inputRange.type = 'range';
+    inputRange.id = id;
+    inputRange.value = valMin;
+    inputRange.min = valMin;
+    inputRange.max = valMax;
+    inputRange.step = (valMax - valMin) / 1000;
+    inputRange.className = 'flex-grow accent-blue-500';
+
+    // Sync input[type="number"] and input[type="range"]
+    inputRange.addEventListener('input', () => {
+        inputNumber.value = inputRange.value;
+    });
+    inputNumber.addEventListener('input', () => {
+        inputRange.value = inputNumber.value;
+    });
+
+    inputNumber.addEventListener('input', function () {update_image(inputNumber.value, index)});
+    inputRange.addEventListener('input', function () {update_image(inputRange.value, index)});
+
+    wrapper.appendChild(label);
+    valueWrapper.appendChild(inputNumber);
+    valueWrapper.appendChild(inputRange);
+    wrapper.appendChild(valueWrapper);
+    
+    return wrapper
+}
+
+function create_slides_groups(data, container, imin, imax, name) {
+
+    // 添加标题
+    const heading = document.createElement('h3');
+    heading.className = 'text-lg font-semibold';
+    heading.innerText = name;
+    container.appendChild(heading);
+
+    // 添加每个参数行
     // for each key in data, getElementById(slider_ids[i]) and set min, max
-    for (let i = 0; i < slider_ids.length; i++) {
-    const slider = document.getElementById(slider_ids[i]);
-    slider.min = data[i + 1].min;
-    slider.max = data[i + 1].max;
+    for (let i = imin; i < imax; i++) {
+        container.appendChild(create_slider_element(data, i));
     }
 }
 
-function update_image(id, index) {
+function createSliders(data) {
+    // airfoil parameters
+
+    create_slides_groups(data, document.getElementById('airfoil-params'), slider_ids.length - 1, slider_ids.length, 'Sectional Airfoil Parameters');
+    create_slides_groups(data, document.getElementById('wing-params'), 2, slider_ids.length - 1, 'Wing Planform Parameters');
+    create_slides_groups(data, document.getElementById('conditions'), 0, 2, 'Operating Conditions');
+}
+
+function update_image(value, index) {
     const currentTime = Date.now();
-    const element = document.getElementById(id);
+    // const element = document.getElementById(id);
+    // console.log(id)
 
     if (currentTime - lastUpdated > 20) {
         if (index < 2) {
-            condition[index] = parseFloat(element.value);
+            condition[index] = parseFloat(value);
         } 
         else if (index < 8) {
-            planform[index - 2] = parseFloat(element.value);
+            planform[index - 2] = parseFloat(value);
             display_wing_frame();
         }
         else if (index === 8) {
-            t = parseFloat(element.value);
+            t = parseFloat(value);
+            // console.log(id)
             display_sectional_airfoil();
         }
         // else if (index === 9) {
@@ -104,22 +160,5 @@ function update_image(id, index) {
         // update_predict();
         lastPredict = currentTime;
     }
-}
-
-function create_slides_events() {
-
-    value_ids.forEach((id, index) => {
-        const element = document.getElementById(id);
-        if (element) {
-            element.addEventListener('input', function () {update_image(id, index)});
-        }
-    });
-    
-    slider_ids.forEach((id, index) => {
-        const element = document.getElementById(id);
-        if (element) {
-            element.addEventListener('input', function () {update_image(id, index)});
-        }
-    });
 }
 

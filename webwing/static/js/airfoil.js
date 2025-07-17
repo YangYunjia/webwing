@@ -10,7 +10,7 @@ let   showPoints = false;
 let   draggedPoint = -1;
 const draggedPointIndx = Array.from({ length: nCtrl }, (_, i) => Math.round((i + 1) * nn / (nCtrl + 1)));
 const sigma = 0.3;
-const yHeight = 0.35, ymax = 0.2, ymin = -0.15;
+const yHeight = 0.25, ymax = 0.15, ymin = -0.1;
 
 function show_airfoil(){
 
@@ -21,8 +21,9 @@ function show_airfoil(){
     }];
     const layout = {
         xaxis: { title: 'x', range: [0, 1] },
-        yaxis: { title: 'y', range: [-0.15, 0.2] },
+        yaxis: { title: 'y', range: [ymin, ymax] },
         margin: { t: 40, l: 50, r: 30, b: 50 },
+        showlegend: false,
         dragmode: showPoints ? 'lasso' : false
     };
 
@@ -50,7 +51,7 @@ function update_bar_values_airfoil() {
 
 function display_sectional_airfoil() {
 
-    console.log("display_sectional_airfoil")
+    // console.log("display_sectional_airfoil")
     // Send airfoil request to flask backend
     fetch('/cst_foil', {
         method: 'POST',
@@ -118,7 +119,7 @@ function create_airfoil_plot() {
             const y = ymax - ((e.clientY - bb.top) / bb.height) * yHeight;
             
             x0 = xx[draggedPointIndx[draggedPoint]]
-            dy = Math.max(0, Math.min(0.2, y)) - yu[draggedPointIndx[draggedPoint]]; // 
+            dy = Math.max(yl[draggedPointIndx[draggedPoint]], Math.min(ymax, y)) - yu[draggedPointIndx[draggedPoint]]; // 
             
             const range = Math.min(x0, 1 - x0, 0.2);
             for (let j = 0; j < xx.length; j++) {

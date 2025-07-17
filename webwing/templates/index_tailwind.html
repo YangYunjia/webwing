@@ -27,10 +27,9 @@
             </div>
         </div>
         
-        <div class="flex w-128 p-6">
+        <div class="flex flex-col w-128 p-6">
             <!-- Sectional Airfoil Parameters -->
             <div class="h-128 p-6">
-                <h3 class="text-xl font-semibold text-gray-800">Sectional Airfoil Parameters</h3>
 
                 <!-- Select -->
                 <div class="my-4 space-y-1">
@@ -39,6 +38,9 @@
                     <!-- Options inserted dynamically -->
                     </select>
                 </div>
+
+                <!-- Root Thickness -->
+                <div id="airfoil-params" class="mt-4"></div>
 
                 <!-- CSTU -->
                 <div class="my-4 space-y-1">
@@ -52,100 +54,42 @@
                     <textarea id="cstl" rows="3" class="w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm resize-none"></textarea>
                 </div>
 
-                <!-- Root Thickness -->
-                <div class="my-4 space-y-1">
-                    <label for="root-thickness" class="block text-sm font-medium text-gray-700">Root Thickness</label>
-                    <div class="flex w-16 space-x-1">
-                        <input type="number" id="root-thickness-value" value="0.0805" min="0" max="1" step="0.001"
-                            class="w-64 rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
-                        <input type="range" id="root-thickness" min="0" max="1" step="0.001" value="0.0805"
-                            class="flex-grow accent-blue-500">
-                    </div>
-                </div>
-
                 <!-- moving points switch-->
                 <button id="toggle-btn" class="my-4 w-32 bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-md">
                     Modify airfoil
                 </button>
             </div>
+            
+            <!-- wing planform parameters -->
+            <div id="wing-params" class="p-6"></div>
+
+            <!--operating conditions -->
+            <div id="conditions" class="p-6"></div>
         </div>
 
-        <div class="flex-grow p-6">
+        <div class="flex-grow">
+            <div class="flex h-128 p-6 gap-6"> 
 
-            <!-- Airfoil Geometry -->
-            <div class="h-128 bg-gray-50 text-gray-800 p-8">
+                <!-- Airfoil Geometry -->
+                <div class="w-[75%] bg-gray-50 text-gray-800 p-8">
 
-                <h1 class="font-bold mb-4">Airfoil Geometry</h1>
+                    <h1 class="font-bold mb-4">Airfoil Geometry</h1>
 
-                <div id="airfoil-plot" class="w-full h-[400px] bg-white rounded-xl shadow-md"></div>
+                    <div id="airfoil-plot" class="w-full h-[400px] bg-white rounded-xl shadow-md"></div>
 
-            </div>
+                </div>
 
-            <div class="h-128 bg-gray-50 text-gray-800 p-8">
+                <div class="w-[25%] bg-gray-50 text-gray-800 p-8">
 
-                <h1 class="font-bold mb-4">Airfoil Geometry</h1>
+                    <h1 class="font-bold mb-4">Wing Geometry</h1>
 
-                <div id="toggle-chart" class="w-full h-[400px] bg-white rounded-xl shadow-md"></div>
+                    <div id="wing-plot" class="w-full h-[400px] bg-white rounded-xl shadow-md"></div>
 
+                </div>
             </div>
-
-            <!-- Wing Planform Parameters -->
-            <div class="box">
-            <h3>Wing Planform Parameters</h3>
-            <div class="parameter-row">
-                <label for="swept-angle">Swept Angle</label>
-                <input type="number" id="swept-angle-value" value="0.1614" min="0" max="10" step="0.001">
-                <input type="range" id="swept-angle" min="0" max="10" step="0.001" value="0.1614">
-            </div>
-            <div class="parameter-row">
-                <label for="dihedral-angle">Dihedral Angle</label>
-                <input type="number" id="dihedral-angle-value" value="1.565" min="0" max="10" step="0.001">
-                <input type="range" id="dihedral-angle" min="0" max="10" step="0.001" value="1.565">
-            </div>
-            <div class="parameter-row">
-                <label for="aspect-ratio">Aspect Ratio</label>
-                <input type="number" id="aspect-ratio-value" value="9.43" min="0" max="10" step="0.001">
-                <input type="range" id="aspect-ratio" min="0" max="10" step="0.001" value="9.43">
-            </div>
-            <div class="parameter-row">
-                <label for="tapper-ratio">Taper Ratio</label>
-                <input type="number" id="tapper-ratio-value" value="0.766" min="0" max="10" step="0.001">
-                <input type="range" id="tapper-ratio" min="0" max="10" step="0.001" value="0.766">
-            </div>
-            <div class="parameter-row">
-                <label for="tip-angle">Tip Twist Angle</label>
-                <input type="number" id="tip-angle-value" value="0.833" min="0" max="10" step="0.001">
-                <input type="range" id="tip-angle" min="0" max="10" step="0.001" value="0.833">
-            </div>
-            <div class="parameter-row">
-                <label for="thickness-ratio">Tip-to-root Thickness Ratio</label>
-                <input type="number" id="thickness-ratio-value" value="0.905" min="0" max="10" step="0.001">
-                <input type="range" id="thickness-ratio" min="0" max="10" step="0.001" value="0.905">
-            </div>
-            </div>
-
-            <!-- Wing Shape -->
-            <div class="box">
-            <h3>Wing Shape</h3>
-            <div class="plot">
-                <img id="display_wing_frame" class="outputImage" src="" alt="Wing Shape">
-            </div>
-            </div>
-
-            <!-- Operating Conditions -->
-            <div class="box">
-            <h3>Operating Conditions</h3>
-            <div class="parameter-row">
-                <label for="aoa">AoA</label>
-                <input type="number" id="aoa-value" value="3.52" min="0" max="10" step="0.001">
-                <input type="range" id="aoa" min="0" max="10" step="0.01" value="3.52">
-            </div>
-            <div class="parameter-row">
-                <label for="mach">Mach</label>
-                <input type="number" id="mach-value" value="0.736" min="0" max="1" step="0.001">
-                <input type="range" id="mach" min="0" max="1" step="0.001" value="0.736">
-            </div>
-            <h3>Coefficients Result</h3>
+        </div>
+        
+            <!-- <h3>Coefficients Result</h3>
             <div class="parameter-row">
                 <label for="CL">CL</label>
                 <p id="CL"></p>
@@ -158,18 +102,17 @@
                 <label for="CM">CM</label>
                 <p id="CM"></p>
             </div>
-            </div>
+        </div> -->
 
-            <!-- Predict Wing Flowfield -->
-            <div class="box">
+        <!-- Predict Wing Flowfield -->
+        <!-- <div class="box">
             <h3>Predict Wing Flowfield</h3>
             <div class="plot">
                 <img id="predict_wing_flowfield" class="outputImage" src=""
                 alt="Wing Flowfield">
             </div>
-            </div>
 
-        </div>
+        </div> -->
     </div>
 
     <script src="{{ url_for('static', filename='js/adjustbar.js') }}"></script>

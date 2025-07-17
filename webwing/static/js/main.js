@@ -11,17 +11,23 @@ fetch('static/wingindex.json')
     .then(data => {
         createDropdown(data);
         create_airfoil_plot();
-        create_slides_events();
     }) // 填充下拉框
     .catch(error => console.error('Error loading wingindex.json:', error));
 
-// Bind all sliders and inputs
-for (let i = 0; i < slider_ids.length; i++) {
-    bindInput(value_ids[i], slider_ids[i]);
+let currentCamera;
+
+function create_camera_monitor() {
+    const plotDiv = document.getElementById('wing-plot');
+
+    plotDiv.on('plotly_relayout', function(eventData) {
+    if (eventData['scene.camera']) {
+        currentCamera = eventData['scene.camera'];
+    }
+    });
 }
 
+
 function display_wing_frame() {
-    console.log("display_wing_frame")
 
     // 发送 POST 请求到 Flask 后端
     fetch('/display_wing_frame', {
@@ -29,14 +35,34 @@ function display_wing_frame() {
     headers: {
         'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ inputs: inputs.slice(2) })  // 发送 inputs[3:] 部分
+    body: JSON.stringify({ planform: planform, cstu: cstu, cstl: cstl, t: t})  // 发送 inputs[3:] 部分
     })
     .then(response => response.json())
     .then(data => {
-        // 成功后，获取带时间戳的图片并更新 HTML 中的 img src
-        const imgElement = document.getElementById('display_wing_frame');
-        imgElement.src = data.image;
+        const traces = data['lines'].map((curve, index) => ({
+            type: 'scatter3d',
+            mode: 'lines',
+            x: curve[0],
+            y: curve[1],
+            z: curve[2],
+            line: {width: 4, color: `black`},
+        }));
+
+        const layout = {
+            margin: { l: 0, r: 0, t: 0, b: 0 },
+            showlegend: false,
+            scene: {
+                xaxis: { title: 'X', range: [0, 4] },
+                yaxis: { title: 'Y', range: [0, 7] },
+                zaxis: { title: 'Z', range: [-0.5, 1.5] },
+                aspectmode: 'equal',
+                ...(currentCamera && { camera: currentCamera })
+            }
+        };
+
+        Plotly.react('wing-plot', traces, layout);
     })
+    .then( () => create_camera_monitor())
     .catch(error => {
         console.error('Error:', error);  // 错误处理
     });
