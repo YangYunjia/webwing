@@ -9,7 +9,7 @@ let planform = [], condition = [];
 let lastUpdated = 0;
 let lastPredict = 0;
 
-function selectDropdown(data) {
+async function selectDropdown(data) {
 
     // get parameters from value
     condition = data.slice(1, 3);
@@ -25,14 +25,14 @@ function selectDropdown(data) {
         document.getElementById(slider_ids[i]).value = inputs[i];
     }
     update_bar_values_airfoil();
-    display_sectional_airfoil();
-    display_wing_frame();
-    // update_predict();
+    await update_airfoil();
+    await update_wing_frame();
+    await update_predict();
 
 }
 
 // construct the dropdown
-function createDropdown(data) {
+async function createDropdown(data) {
     const dropdown = document.getElementById('airfoil-select');
     dropdown.innerHTML = ''; // 清空之前的选项
 
@@ -47,22 +47,19 @@ function createDropdown(data) {
     }
     // 添加change事件监听器，当用户选择新值时，自动更新滑动条
     dropdown.addEventListener('change', function () {selectDropdown(data[dropdown.value])});
-    selectDropdown(data[0])
+    await selectDropdown(data[0])
 }
 
 // Construct sliders
-function create_slider_element(data, index) {
-    id = slider_ids[index]
-    valMin = data[index + 1].min
-    valMax = data[index + 1].max
-
+function create_slider_element(id, name, valMin, valMax, valInit) {
+    
     const wrapper = document.createElement('div');
     wrapper.className = 'mb-1';
 
     const label = document.createElement('label');
     label.setAttribute('for', `${id}-value`);
     label.className = 'block text-sm font-medium text-gray-700 mb-1';
-    label.innerText = slider_names[index];
+    label.innerText = name;
 
     const valueWrapper = document.createElement('div');
     valueWrapper.className = 'flex w-full space-x-1'
@@ -70,16 +67,16 @@ function create_slider_element(data, index) {
     const inputNumber = document.createElement('input');
     inputNumber.type = 'number';
     inputNumber.id = `${id}-value`;
-    inputNumber.value = valMin;
+    inputNumber.value = valInit;
     inputNumber.min = valMin;
     inputNumber.max = valMax;
     inputNumber.step = (valMax - valMin) / 1000;
-    inputNumber.className = 'w-24 mb-1 px-2 py-1 border text-sm rounded-md shadow-sm focus:ring focus:ring-indigo-200';
+    inputNumber.className = 'w-16 mb-1 px-2 py-1 border text-sm rounded-md shadow-sm focus:ring focus:ring-indigo-200';
 
     const inputRange = document.createElement('input');
     inputRange.type = 'range';
     inputRange.id = id;
-    inputRange.value = valMin;
+    inputRange.value = valInit;
     inputRange.min = valMin;
     inputRange.max = valMax;
     inputRange.step = (valMax - valMin) / 1000;
@@ -93,15 +90,12 @@ function create_slider_element(data, index) {
         inputRange.value = inputNumber.value;
     });
 
-    inputNumber.addEventListener('input', function () {update_image(inputNumber.value, index)});
-    inputRange.addEventListener('input', function () {update_image(inputRange.value, index)});
-
     wrapper.appendChild(label);
     valueWrapper.appendChild(inputNumber);
     valueWrapper.appendChild(inputRange);
     wrapper.appendChild(valueWrapper);
-    
-    return wrapper
+
+    return [wrapper, inputNumber, inputRange]
 }
 
 function create_slides_groups(data, container, imin, imax, name) {
@@ -115,7 +109,20 @@ function create_slides_groups(data, container, imin, imax, name) {
     // 添加每个参数行
     // for each key in data, getElementById(slider_ids[i]) and set min, max
     for (let i = imin; i < imax; i++) {
-        container.appendChild(create_slider_element(data, i));
+        const id = slider_ids[i]
+        const valMin = data[i + 1].min
+        const valMax = data[i + 1].max
+        console.log(i, id)
+
+        elements = create_slider_element(id, slider_names[i], valMin, valMax, valMin)
+        const wrapper = elements[0]
+        const inputNumber = elements[1]
+        const inputRange = elements[2]
+
+        inputNumber.addEventListener('input', function () {update_image(inputNumber.value, i)});
+        inputRange.addEventListener('input', function () {update_image(inputRange.value, i)});
+
+        container.appendChild(wrapper);
     }
 }
 
@@ -138,12 +145,16 @@ function update_image(value, index) {
         } 
         else if (index < 8) {
             planform[index - 2] = parseFloat(value);
-            display_wing_frame();
+            update_wing_frame();
         }
         else if (index === 8) {
             t = parseFloat(value);
             // console.log(id)
-            display_sectional_airfoil();
+            update_airfoil();
+        }
+        else {
+            // CSTs
+            update_airfoil();
         }
         // else if (index === 9) {
         // const newValues = element.value.split(",").map(parseFloat);
@@ -157,7 +168,7 @@ function update_image(value, index) {
     lastUpdated = currentTime;
     }
     if (currentTime - lastPredict > 500) {
-        // update_predict();
+        update_predict();
         lastPredict = currentTime;
     }
 }

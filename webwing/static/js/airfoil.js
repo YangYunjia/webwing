@@ -49,26 +49,26 @@ function update_bar_values_airfoil() {
     document.getElementById('cstl').value = cstl.toString();
 }
 
-function display_sectional_airfoil() {
+async function update_airfoil() {
 
     // console.log("display_sectional_airfoil")
     // Send airfoil request to flask backend
-    fetch('/cst_foil', {
-        method: 'POST',
-        headers: {
-        'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ cstu: cstu, cstl: cstl, t: t})  // send inputs[9:] parameters (airfoil CSTs)
-    })
-    .then(response => response.json())
-    .then(data => {
-        xx = data.x;
-        yu = data.yu;
-        yl = data.yl;
-        show_airfoil();
-    })
-    .catch(error => {console.error('Error:', error);  // error
-    });
+    try {
+        response = await fetch('/cst_foil', {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ cstu: cstu, cstl: cstl, t: t})  // send inputs[9:] parameters (airfoil CSTs)
+        })
+        data = await response.json()
+    } catch {
+        console.error('Error:', error);  // error
+    }
+    xx = data.x;
+    yu = data.yu;
+    yl = data.yl;
+    show_airfoil();
 }
 
 function cst_fit() {
@@ -85,23 +85,22 @@ function cst_fit() {
         cstu = data.cstu;
         cstl = data.cstl;
         update_bar_values_airfoil();
-        display_sectional_airfoil();
+        update_image(0, 100);
     })
     .catch(error => {console.error('Error:', error);  // error
     });
 
 }
 
-function create_airfoil_plot() {
-    show_airfoil();
+function create_airfoil_plot_motion() {
 
     // 启用 Plotly 拖动事件监听
     document.getElementById('airfoil-plot').on('plotly_click', function (plotData) {
         if (!showPoints) return;
 
         if (draggedPoint > -1) {
-            draggedPoint = -1
-            cst_fit()
+            draggedPoint = -1;
+            cst_fit();
         }
         else {
             if (plotData.points.length && plotData.points[0].curveNumber === 2) {

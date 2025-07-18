@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>3D Viewer - Tailwind</title>
+    <title>WebWing</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
@@ -87,35 +87,40 @@
 
                 </div>
             </div>
+
+            <div class="flex h-128 p-6 gap-6"> 
+
+                <!-- Wing surface -->
+                <div class="w-[70%] bg-gray-50 text-gray-800 p-8">
+
+                    <h1 class="font-bold mb-4">wing surface</h1>
+
+                    <div id="button-container" class="flex space-x-4 pb-4"></div>
+
+                    <div id="surface-plot" class="w-full h-[400px] bg-white rounded-xl shadow-md"></div>
+                    
+                    <div id="coefficients_block" class="p-6">
+
+                        <h1 class="font-bold mb-4">Aerodynamic coefficients</h1>
+                        <pre id="coefficients" class="block text-sm font-medium text-gray-700"></pre>
+
+                    </div>
+                </div>
+
+                <div class="w-[30%] bg-gray-50 text-gray-800 p-8">
+
+                    <h1 class="font-bold mb-4">slices</h1>
+
+                    <div id="slices-plot" class="w-full space-y-2"></div>
+
+                </div>
+            </div>
         </div>
-        
-            <!-- <h3>Coefficients Result</h3>
-            <div class="parameter-row">
-                <label for="CL">CL</label>
-                <p id="CL"></p>
-            </div>
-            <div class="parameter-row">
-                <label for="CD">CD</label>
-                <p id="CD"></p>
-            </div>
-            <div class="parameter-row">
-                <label for="CM">CM</label>
-                <p id="CM"></p>
-            </div>
-        </div> -->
 
-        <!-- Predict Wing Flowfield -->
-        <!-- <div class="box">
-            <h3>Predict Wing Flowfield</h3>
-            <div class="plot">
-                <img id="predict_wing_flowfield" class="outputImage" src=""
-                alt="Wing Flowfield">
-            </div>
-
-        </div> -->
     </div>
 
     <script src="{{ url_for('static', filename='js/adjustbar.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/wing.js') }}"></script>
     <script src="{{ url_for('static', filename='js/airfoil.js') }}"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
