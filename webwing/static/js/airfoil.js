@@ -49,47 +49,14 @@ function update_bar_values_airfoil() {
     document.getElementById('cstl').value = cstl.toString();
 }
 
-async function update_airfoil() {
+function update_airfoil() {
 
     // console.log("display_sectional_airfoil")
-    // Send airfoil request to flask backend
-    try {
-        response = await fetch('/cst_foil', {
-            method: 'POST',
-            headers: {
-            'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ cstu: cstu, cstl: cstl, t: t})  // send inputs[9:] parameters (airfoil CSTs)
-        })
-        data = await response.json()
-    } catch {
-        console.error('Error:', error);  // error
-    }
-    xx = data.x;
-    yu = data.yu;
-    yl = data.yl;
+    foil = cst_foil(nn, cstu, cstl, x=null, t=t, tail=0.004);
+    xx = foil[0];
+    yu = foil[1];
+    yl = foil[2];
     show_airfoil();
-}
-
-function cst_fit() {
-
-    fetch('/cst_fit', {
-        method: 'POST',
-        headers: {
-        'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ xx: xx, yu: yu, yl: yl})  // send new x,ys
-    })
-    .then(response => response.json())
-    .then(data => {
-        cstu = data.cstu;
-        cstl = data.cstl;
-        update_bar_values_airfoil();
-        update_image(0, 100);
-    })
-    .catch(error => {console.error('Error:', error);  // error
-    });
-
 }
 
 function create_airfoil_plot_motion() {
@@ -100,7 +67,11 @@ function create_airfoil_plot_motion() {
 
         if (draggedPoint > -1) {
             draggedPoint = -1;
-            cst_fit();
+            csts = cst_foil_fit(xx, yu, xx, yl, n_cst=10);
+            cstu = csts[0];
+            cstl = csts[1];
+            update_bar_values_airfoil();
+            update_image(0, 100);
         }
         else {
             if (plotData.points.length && plotData.points[0].curveNumber === 2) {

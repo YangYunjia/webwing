@@ -9,6 +9,10 @@ const rangesChannel = [[1, -1.5], [-0.005, 0.015], [-0.004, 0.004]];
 const signsChannel  = [-1, 1, 1];
 let activeChannel = 0;
 
+// ================================
+// Create components
+// ================================
+
 function create_camera_monitor() {
 
     plots = ['wing-plot', 'surface-plot'];
@@ -22,44 +26,183 @@ function create_camera_monitor() {
    
 }
 
-async function update_wing_frame() {
+function create_section_slides_groups() {
 
-    try {
-        const response = await fetch('/display_wing_frame', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ planform: planform, cstu: cstu, cstl: cstl, t: t})  // 发送 inputs[3:] 部分
+    const containerPlots = document.getElementById('slices-plot')
+
+    for (let i = 0; i < nSlices; i++) {
+
+        // bars
+        const id = `slices-${i}`
+        elements = create_slider_element(id, `section ${i}`, 0, 1, etas[i])
+        const wrapper = elements[0]
+        const inputNumber = elements[1]
+        const inputRange = elements[2]
+
+        inputNumber.addEventListener('input', function () {
+            etas[i] = inputNumber.value;
+            update_slices(i);
         });
-        const data = await response.json();
-        
-        const traces = data['lines'].map((curve, index) => ({
-            type: 'scatter3d',
-            mode: 'lines',
-            x: curve[0],
-            y: curve[1],
-            z: curve[2],
-            line: {width: 4, color: `black`},
-        }));
+        inputRange.addEventListener('input', function () {
+            etas[i] = inputNumber.value;
+            update_slices(i);
+        });
 
-        const layout = {
-            margin: { l: 0, r: 0, t: 0, b: 0 },
-            showlegend: false,
-            scene: {
-                xaxis: { title: 'X', range: [0, 5] },
-                yaxis: { title: 'Y', range: [0, 7] },
-                zaxis: { title: 'Z', range: [-0.5, 1.5] },
-                aspectmode: 'equal',
-                ...(currentCamera && { camera: currentCamera })
-            }
-        };
+        containerPlots.appendChild(wrapper);
 
-        Plotly.react('wing-plot', traces, layout);
+        // plots
+        const plot = document.createElement('div')
+        plot.className = 'h-48 w-full bg-white rounded-xl shadow-md'
+        plot.id = `slice-plot-${i}`
+        containerPlots.appendChild(plot)
+    }
 
-    } catch (error) {
-        console.error('Error:', error);  // error
+}
+
+function create_channel_selector(){
+
+    const buttonContainer = document.getElementById('button-container');
+
+    const renderButtons = () => {
+      buttonContainer.innerHTML = ''; // clear container
+
+      buttonLabels.forEach((label, index) => {
+        const btn = document.createElement('button');
+        btn.textContent = label;
+        btn.className = `toggle-btn px-4 py-2 rounded shadow ${
+          index === activeChannel ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'
+        }`;
+
+        btn.addEventListener('click', () => {
+          activeChannel = index;
+          update_plot_slices();
+          renderButtons(); // render
+        });
+
+        buttonContainer.appendChild(btn);
+      });
+    };
+
+    renderButtons(); // initial
+}
+
+// ================================
+// Plot wing frame
+// ================================
+
+function linear_intp(x, xmin, xmax, ymin, ymax) {
+
+    const y = new Array(x.length).fill(0);
+
+    for (let idx = 0; idx < x.length; idx++) {
+        y[idx] = ymin + (x[idx] - xmin) / (xmax - xmin) * (ymax - ymin)
+    }
+
+    return y
+}
+
+function rotate_Z(xx0, yy0, ref, angle) {
+    const cosA = Math.cos(angle);
+    const sinA = Math.sin(angle);
+    const [x0, y0] = ref;
+
+    const xRot = [];
+    const yRot = [];
+
+    for (let i = 0; i < xx0.length; i++) {
+        const dx = xx0[i] - x0;
+        const dy = yy0[i] - y0;
+        xRot.push(x0 + dx * cosA - dy * sinA);
+        yRot.push(y0 + dx * sinA + dy * cosA);
+    }
+
+    return [xRot, yRot];
+}
+
+function half_span(ar, tr) {
+
+    return 0.25 * ar * (1 + tr)
+
+}
+
+function reconstruct_surface_frame() {
+
+    const hs = half_span(planform[2], planform[3]);
+    const zLEs = numeric.linspace(0, hs, 5);
+    const xLEs = linear_intp(zLEs, 0, hs, 0, Math.tan(planform[0] * DEGREE) * hs)
+    const yLEs = linear_intp(zLEs, 0, hs, 0, Math.tan(planform[1] * DEGREE) * hs)
+    const thickRatios = linear_intp(zLEs, 0, hs, 1, planform[5]);
+    const twistAngles = linear_intp(zLEs, 0, hs, 0, planform[4]);
+    const chordLengths = linear_intp(zLEs, 0, hs, 1, planform[3]);
+
+    const wingFrameLines = [[xLEs, zLEs, yLEs]];
+
+    // get airfoil points from current xx, yl, yu
+    const _xx = [...xx].reverse().concat(xx.slice(1));
+    const _yy = [...yl].reverse().concat(yu.slice(1));
+    const tailLine = [[], zLEs, []];
+
+    for (let idx = 0; idx < zLEs.length; idx++) {
+
+        let xFinal = new Array(_xx.length).fill(0);
+        let yFinal = new Array(_yy.length).fill(0);
+
+        for (let i = 0; i < xFinal.length; i++) {
+            // scaling
+            xFinal[i] = _xx[i] * chordLengths[idx]
+            yFinal[i] = _yy[i] * thickRatios[idx]
+        }
+
+        const [rotX, rotY] = rotate_Z(xFinal, yFinal, [0., 0.], twistAngles[idx] * DEGREE);
+
+        for (let i = 0; i < xFinal.length; i++) {
+            xFinal[i] = rotX[i] + xLEs[idx];
+            yFinal[i] = rotY[i] + yLEs[idx];
+        }
+
+        wingFrameLines.push([xFinal, new Array(xFinal.length).fill(zLEs[idx]), yFinal]);
+
+        // tail line
+        tailLine[0].push(0.5 * (xFinal[0] + xFinal[xFinal.length - 1]))
+        tailLine[2].push(0.5 * (yFinal[0] + yFinal[yFinal.length - 1]))
 
     }
+
+    wingFrameLines.push(tailLine)
+
+    return wingFrameLines;
 }
+
+function update_wing_frame() {
+
+    const traces = reconstruct_surface_frame().map((curve, index) => ({
+        type: 'scatter3d',
+        mode: 'lines',
+        x: curve[0],
+        y: curve[1],
+        z: curve[2],
+        line: {width: 4, color: `black`},
+    }));
+
+    const layout = {
+        margin: { l: 0, r: 0, t: 0, b: 0 },
+        showlegend: false,
+        scene: {
+            xaxis: { title: 'X', range: [0, 5] },
+            yaxis: { title: 'Y', range: [0, 7] },
+            zaxis: { title: 'Z', range: [-0.5, 1.5] },
+            aspectmode: 'equal',
+            ...(currentCamera && { camera: currentCamera })
+        }
+    };
+
+    Plotly.react('wing-plot', traces, layout);
+
+}
+
+// ================================
+// Plot wing surface
+// ================================
 
 function update_plot_slices() {
 
@@ -146,64 +289,4 @@ function update_slices(i) {
     };
     Plotly.newPlot(`slice-plot-${i}`, plotData, layout);
 
-}
-
-function create_section_slides_groups() {
-
-    const containerPlots = document.getElementById('slices-plot')
-
-    for (let i = 0; i < nSlices; i++) {
-
-        // bars
-        const id = `slices-${i}`
-        elements = create_slider_element(id, `section ${i}`, 0, 1, etas[i])
-        const wrapper = elements[0]
-        const inputNumber = elements[1]
-        const inputRange = elements[2]
-
-        inputNumber.addEventListener('input', function () {
-            etas[i] = inputNumber.value;
-            update_slices(i);
-        });
-        inputRange.addEventListener('input', function () {
-            etas[i] = inputNumber.value;
-            update_slices(i);
-        });
-
-        containerPlots.appendChild(wrapper);
-
-        // plots
-        const plot = document.createElement('div')
-        plot.className = 'h-48 w-full bg-white rounded-xl shadow-md'
-        plot.id = `slice-plot-${i}`
-        containerPlots.appendChild(plot)
-    }
-
-}
-
-function create_channel_selector(){
-
-    const buttonContainer = document.getElementById('button-container');
-
-    const renderButtons = () => {
-      buttonContainer.innerHTML = ''; // clear container
-
-      buttonLabels.forEach((label, index) => {
-        const btn = document.createElement('button');
-        btn.textContent = label;
-        btn.className = `toggle-btn px-4 py-2 rounded shadow ${
-          index === activeChannel ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'
-        }`;
-
-        btn.addEventListener('click', () => {
-          activeChannel = index;
-          update_plot_slices();
-          renderButtons(); // render
-        });
-
-        buttonContainer.appendChild(btn);
-      });
-    };
-
-    renderButtons(); // initial
 }

@@ -6,6 +6,7 @@
     <title>WebWing</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/numeric/1.2.6/numeric.min.js"></script>
 </head>
 
 <body class="bg-gray-100 text-gray-800">
@@ -119,6 +120,7 @@
 
     </div>
 
+    <script src="{{ url_for('static', filename='js/cst.js') }}"></script>
     <script src="{{ url_for('static', filename='js/adjustbar.js') }}"></script>
     <script src="{{ url_for('static', filename='js/wing.js') }}"></script>
     <script src="{{ url_for('static', filename='js/airfoil.js') }}"></script>

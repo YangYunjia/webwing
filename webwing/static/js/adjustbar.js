@@ -2,10 +2,11 @@
 const slider_names = ['AoA', 'Mach', 'Sweep angle', 'Dihedral angle', 'Aspect ratio', 'tapper-ratio', 'tip-angle', 'thickness-ratio', 'root-thickness'];
 const slider_ids   = ['aoa', 'mach', 'swept-angle', 'dihedral-angle', 'aspect-ratio', 'tapper-ratio', 'tip-angle', 'thickness-ratio', 'root-thickness'];
 const value_ids    = Array.from({ length: slider_ids.length }, (_, i) => slider_ids[i] + '-value');
+const DEGREE       = Math.PI / 180
 
 let cstu = [], cstl = [], t = 0.0;
 let planform = [], condition = [];
-
+// [sa0, da0, ar, tr, tw, tcr]
 let lastUpdated = 0;
 let lastPredict = 0;
 
@@ -25,8 +26,8 @@ async function selectDropdown(data) {
         document.getElementById(slider_ids[i]).value = inputs[i];
     }
     update_bar_values_airfoil();
-    await update_airfoil();
-    await update_wing_frame();
+    update_airfoil();
+    update_wing_frame();
     await update_predict();
 
 }
@@ -165,7 +166,7 @@ function update_image(value, index) {
         // inputs.splice(19, 10, ...newValues);
         // }
         // console.log(inputs);
-    lastUpdated = currentTime;
+        lastUpdated = currentTime;
     }
     if (currentTime - lastPredict > 500) {
         update_predict();
