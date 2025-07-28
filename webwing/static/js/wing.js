@@ -4,8 +4,9 @@ const etas = [0.2, 0.8];
 let currentCamera;
 
 const buttonLabels = ['Cp', 'Cft', 'Cfz'];
-const rangesChannel = [[1, -1.5], [-0.005, 0.015], [-0.004, 0.004]]
-const signsChannel  = [-1, 1, 1]
+const rangesPlot   = [[0, 5], [0, 7], [-0.5, 1.5]];
+const rangesChannel = [[1, -1.5], [-0.005, 0.015], [-0.004, 0.004]];
+const signsChannel  = [-1, 1, 1];
 let activeChannel = 0;
 
 function create_camera_monitor() {
@@ -47,7 +48,7 @@ async function update_wing_frame() {
                 xaxis: { title: 'X', range: [0, 5] },
                 yaxis: { title: 'Y', range: [0, 7] },
                 zaxis: { title: 'Z', range: [-0.5, 1.5] },
-                aspectmode: 'data',
+                aspectmode: 'equal',
                 ...(currentCamera && { camera: currentCamera })
             }
         };
@@ -117,10 +118,11 @@ function update_wing_plot() {
 
     const layout = {
         scene: {
-            xaxis: { title: 'X', range: [0, 5] },
-            yaxis: { title: 'Y', range: [0, 7] },
-            zaxis: { title: 'Z', range: [-0.5, 1.5] },
-            aspectmode: 'data',
+            xaxis: { title: 'X', range: rangesPlot[0] },
+            yaxis: { title: 'Y', range: rangesPlot[1] },
+            zaxis: { title: 'Z', range: rangesPlot[1] },
+            aspectmode: 'mannal',
+            aspectratio: {'x': rangesPlot[0][1] - rangesPlot[0][0], 'y': rangesPlot[1][1] - rangesPlot[1][0], 'z': rangesPlot[2][1] - rangesPlot[2][0]},
             ...(currentCamera && { camera: currentCamera })
         },
         margin: { t: 0 }
