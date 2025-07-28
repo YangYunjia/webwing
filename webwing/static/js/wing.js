@@ -34,19 +34,12 @@ function create_section_slides_groups() {
 
         // bars
         const id = `slices-${i}`
-        elements = create_slider_element(id, `section ${i}`, 0, 1, etas[i])
-        const wrapper = elements[0]
-        const inputNumber = elements[1]
-        const inputRange = elements[2]
-
-        inputNumber.addEventListener('input', function () {
-            etas[i] = inputNumber.value;
-            update_slices(i);
-        });
-        inputRange.addEventListener('input', function () {
-            etas[i] = inputNumber.value;
-            update_slices(i);
-        });
+        wrapper = create_slider_element(id, `section ${i}`, 0, 1, etas[i],
+            value => {
+                etas[i] = value;
+                update_slices(i);
+            }
+        )
 
         containerPlots.appendChild(wrapper);
 

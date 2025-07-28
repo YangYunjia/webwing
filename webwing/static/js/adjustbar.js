@@ -52,7 +52,7 @@ async function createDropdown(data) {
 }
 
 // Construct sliders
-function create_slider_element(id, name, valMin, valMax, valInit) {
+function create_slider_element(id, name, valMin, valMax, valInit, updataCallback) {
     
     const wrapper = document.createElement('div');
     wrapper.className = 'mb-1';
@@ -83,12 +83,22 @@ function create_slider_element(id, name, valMin, valMax, valInit) {
     inputRange.step = (valMax - valMin) / 1000;
     inputRange.className = 'flex-grow accent-blue-500';
 
+    let isSyncing = false; // avoid duplication in updating values
+
     // Sync input[type="number"] and input[type="range"]
     inputRange.addEventListener('input', () => {
+        if (isSyncing) return;
+        isSyncing = true
         inputNumber.value = inputRange.value;
+        updataCallback(inputRange.value)
+        isSyncing = false
     });
     inputNumber.addEventListener('input', () => {
+        if (isSyncing) return;
+        isSyncing = true
         inputRange.value = inputNumber.value;
+        updataCallback(inputNumber.value)
+        isSyncing = false
     });
 
     wrapper.appendChild(label);
@@ -96,7 +106,7 @@ function create_slider_element(id, name, valMin, valMax, valInit) {
     valueWrapper.appendChild(inputRange);
     wrapper.appendChild(valueWrapper);
 
-    return [wrapper, inputNumber, inputRange]
+    return wrapper
 }
 
 function create_slides_groups(data, container, imin, imax, name) {
@@ -115,13 +125,9 @@ function create_slides_groups(data, container, imin, imax, name) {
         const valMax = data[i + 1].max
         console.log(i, id)
 
-        elements = create_slider_element(id, slider_names[i], valMin, valMax, valMin)
-        const wrapper = elements[0]
-        const inputNumber = elements[1]
-        const inputRange = elements[2]
-
-        inputNumber.addEventListener('input', function () {update_image(inputNumber.value, i)});
-        inputRange.addEventListener('input', function () {update_image(inputRange.value, i)});
+        wrapper = create_slider_element(id, slider_names[i], valMin, valMax, valMin, 
+            value => update_image(value, i)
+        )
 
         container.appendChild(wrapper);
     }
@@ -138,7 +144,7 @@ function createSliders(data) {
 function update_image(value, index) {
     const currentTime = Date.now();
     // const element = document.getElementById(id);
-    // console.log(id)
+    console.log(index, 'call update');
 
     if (currentTime - lastUpdated > 20) {
         if (index < 2) {
