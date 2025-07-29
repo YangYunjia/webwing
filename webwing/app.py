@@ -7,7 +7,7 @@ from flowvae.app.wing.api import Wing_api
 
 # establish the wing api instance at the beginning of the client
 # later use it to predict wing results given input parameters
-wing_api = Wing_api(saves_folder='C:\\Users\\yang\\Research\\2025Wing\\ssw_model\\saves', device='default')
+wing_api = Wing_api(saves_folder='../../saves', device='default')
 
 app = Flask(__name__)
 
@@ -33,4 +33,4 @@ def index():
 
 if __name__ == '__main__':
     # app.run(host='0.0.0.0', port=80, debug=False)
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=8000, debug=True)
