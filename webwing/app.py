@@ -3,11 +3,6 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "True"
 
 from flask import Flask, render_template, request, jsonify
 
-
-import numpy as np
-
-from cst_modeling.section import cst_foil, cst_foil_fit, clustcos
-from cfdpost.wing.basic import reconstruct_surface_frame, points2line, Wing
 from flowvae.app.wing.api import Wing_api
 
 # establish the wing api instance at the beginning of the client

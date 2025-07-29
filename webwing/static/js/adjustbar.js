@@ -7,8 +7,11 @@ const DEGREE       = Math.PI / 180
 let cstu = [], cstl = [], t = 0.0;
 let planform = [], condition = [];
 // [sa0, da0, ar, tr, tw, tcr]
+
 let lastUpdated = 0;
-let lastPredict = 0;
+let updateThrottle = 20; //ms
+let predictTimer = null;
+let predictDebounce = 500; //ms
 
 async function selectDropdown(data) {
 
@@ -68,20 +71,20 @@ function create_slider_element(id, name, valMin, valMax, valInit, updataCallback
     const inputNumber = document.createElement('input');
     inputNumber.type = 'number';
     inputNumber.id = `${id}-value`;
-    inputNumber.value = valInit;
     inputNumber.min = valMin;
     inputNumber.max = valMax;
     inputNumber.step = (valMax - valMin) / 1000;
     inputNumber.className = 'w-16 mb-1 px-2 py-1 border text-sm rounded-md shadow-sm focus:ring focus:ring-indigo-200';
+    inputNumber.value = valInit;
 
     const inputRange = document.createElement('input');
     inputRange.type = 'range';
     inputRange.id = id;
-    inputRange.value = valInit;
     inputRange.min = valMin;
     inputRange.max = valMax;
     inputRange.step = (valMax - valMin) / 1000;
     inputRange.className = 'flex-grow accent-blue-500';
+    inputRange.value = valInit;
 
     let isSyncing = false; // avoid duplication in updating values
 
@@ -144,9 +147,9 @@ function createSliders(data) {
 function update_image(value, index) {
     const currentTime = Date.now();
     // const element = document.getElementById(id);
-    console.log(index, 'call update');
+    // console.log(index, 'call update');
 
-    if (currentTime - lastUpdated > 20) {
+    if (currentTime - lastUpdated > updateThrottle) {
         if (index < 2) {
             condition[index] = parseFloat(value);
         } 
@@ -156,7 +159,6 @@ function update_image(value, index) {
         }
         else if (index === 8) {
             t = parseFloat(value);
-            // console.log(id)
             update_airfoil();
         }
         else {
@@ -174,9 +176,10 @@ function update_image(value, index) {
         // console.log(inputs);
         lastUpdated = currentTime;
     }
-    if (currentTime - lastPredict > 500) {
-        update_predict();
-        lastPredict = currentTime;
-    }
+
+    // debounce of prediction
+    if (predictTimer) clearTimeout(predictTimer);
+    predictTimer = setTimeout(() => update_predict(), predictDebounce);
+
 }
 

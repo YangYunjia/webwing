@@ -5,7 +5,7 @@ let currentCamera;
 
 const buttonLabels = ['Cp', 'Cft', 'Cfz'];
 const rangesPlot   = [[0, 5], [0, 7], [-0.5, 1.5]];
-const rangesChannel = [[1, -1.5], [-0.005, 0.015], [-0.004, 0.004]];
+const rangesChannel = [[1, -1.8], [-0.005, 0.015], [-0.004, 0.004]];
 const signsChannel  = [-1, 1, 1];
 let activeChannel = 0;
 
