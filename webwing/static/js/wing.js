@@ -1,4 +1,5 @@
 let wingData = [], wingGeom = [];
+const maxAttempts = 20, attemptTimeout = 500; // ms
 const nSlices = 2;
 const etas = [0.2, 0.8];
 let currentCamera;
@@ -208,20 +209,51 @@ function update_plot_slices() {
 async function update_predict() {
 
     console.log("predict_wing_flowfield");
+    document.getElementById('coefficients').innerText = 'Predicting... please wait';
 
     try {
-        response = await fetch('/predict_wing_flowfield', {
+        let response = await fetch('/predict_wing_flowfield', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ conditions: condition, planform: planform, cstu: cstu, cstl: cstl, t: t })
         })
-        data = await response.json();
-        wingData = data.value;
-        wingGeom = data.geom;
-        update_plot_slices();
-        document.getElementById('coefficients').innerText = 'CL = ' + data.cl_array[0].toFixed(4) + 
-            '    CD = ' + data.cl_array[1].toFixed(4) + '     CMz = ' + data.cl_array[2].toFixed(4) +
-            '    L/D = ' + (data.cl_array[0] / data.cl_array[1]).toFixed(4);
+        let submitInfo = await response.json();
+
+        if (submitInfo.status == 429) {
+            document.getElementById('coefficients').innerText = 'Sever is busy... please try again later';
+        }
+
+        else {
+            const taskID = submitInfo.task_id;
+
+            // polling for results
+            let attempts = 0;
+            let data = null;
+
+            while (attempts < maxAttempts) {
+                await new Promise(resolve => setTimeout(resolve, attemptTimeout));
+                let check = await fetch(`/result/${taskID}`);
+
+                if (check.status == 200) {
+                    data = await check.json();
+                    break
+                }
+
+                attempts += 1;
+            }
+
+            if (!data) {
+                alart('prediction timeout')
+                throw new Error("Prediction timeout")
+            }
+
+            wingData = data.value;
+            wingGeom = data.geom;
+            update_plot_slices();
+            document.getElementById('coefficients').innerText = 'CL = ' + data.cl_array[0].toFixed(4) + 
+                '    CD = ' + data.cl_array[1].toFixed(4) + '     CMz = ' + data.cl_array[2].toFixed(4) +
+                '    L/D = ' + (data.cl_array[0] / data.cl_array[1]).toFixed(4);
+        }
     } catch (error) {
         console.error('Error:', error);  // error
     }
