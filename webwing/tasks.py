@@ -1,3 +1,6 @@
+import time
+from utils.log_config import setup_logger
+
 from celery import Celery
 from celery.signals import worker_process_init
 from flowvae.app.wing.api import Wing_api
@@ -14,6 +17,7 @@ celery_app.config_from_object({
     'worker_concurrency': 1  # 只允许1个GPU任务并发
 })
 
+worker_logger = setup_logger("worker", "worker.log")
 # 模型只初始化一次
 wing_api = None
 
@@ -26,6 +30,15 @@ def init_wing_api(**kwargs):
 @celery_app.task
 def predict_wing_flowfield(data):
     try:
-        return wing_api.end2end_predict(data)
+        worker_logger.info(f"[START] New prediction task received")
+
+        start_time = time.time()
+        results = wing_api.end2end_predict(data)
+        duration = time.time() - start_time
+
+        worker_logger.info(f"[DONE] Task completed in {duration:.2f}s")
+        return results
+    
     except Exception as e:
+        worker_logger.exception(f"[ERROR] Prediction failed: {e}")
         return {"error": str(e)}
