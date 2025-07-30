@@ -26,15 +26,6 @@ def init_wing_api(**kwargs):
 @celery_app.task
 def predict_wing_flowfield(data):
     try:
-        inputs = data['conditions'] + data['planform'] + [data['t']] + data['cstu'] + data['cstl']
-        wg = wing_api.predict(inputs)
-        wg.aero_force()
-        cl_array = wg.cl
-        surfaceField = wg.get_formatted_surface().transpose(2, 0, 1)
-        return {
-            "geom": surfaceField[:3].tolist(),
-            "value": surfaceField[3:].tolist(),
-            "cl_array": cl_array.tolist()
-        }
+        return wing_api.end2end_predict(data)
     except Exception as e:
         return {"error": str(e)}

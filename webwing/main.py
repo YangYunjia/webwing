@@ -51,4 +51,7 @@ async def get_result(task_id: str):
         return task.result
     else:
         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"state": task.state, "error": str(task.info)})
-    
+
+@app.route("/config")
+def config():
+    return {"mode": "server"}
