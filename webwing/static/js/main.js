@@ -1,14 +1,17 @@
+let config = null
 
 async function main() {
-    fetch('static/max_min.json')
-        .then(response => response.json())
-        .then(data => createSliders(data))
-        .catch(error => console.error('Error loading max_min.json:', error));
 
     try {
-        const response = await fetch('static/wingindex.json');
-        const data = await response.json();
+        const [data, minmaxData, configData] = await Promise.all([
+            fetch('static/wingindex.json').then(res => res.json()),
+            fetch('static/max_min.json').then(res => res.json()),
+            fetch('static/config.json').then(res => res.json())
+        ]);
 
+        config = configData
+
+        createSliders(minmaxData)
         create_section_slides_groups();
         create_channel_selector();
 

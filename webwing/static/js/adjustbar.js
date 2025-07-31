@@ -9,9 +9,7 @@ let planform = [], condition = [];
 // [sa0, da0, ar, tr, tw, tcr]
 
 let lastUpdated = 0;
-let updateThrottle = 20; //ms
 let predictTimer = null;
-let predictDebounce = 500; //ms
 
 async function selectDropdown(data) {
 
@@ -38,9 +36,9 @@ async function selectDropdown(data) {
 // construct the dropdown
 async function createDropdown(data) {
     const dropdown = document.getElementById('airfoil-select');
-    dropdown.innerHTML = ''; // 清空之前的选项
+    dropdown.innerHTML = ''; // clear former selection
 
-    // 遍历 wingindex.json 中的键并创建选项
+    // create selections from data
     for (let key in data) {
         if (data.hasOwnProperty(key)) {
             const option = document.createElement('option');
@@ -49,7 +47,7 @@ async function createDropdown(data) {
             dropdown.appendChild(option);
         }
     }
-    // 添加change事件监听器，当用户选择新值时，自动更新滑动条
+    // add listener to dropdown box
     dropdown.addEventListener('change', function () {selectDropdown(data[dropdown.value])});
     await selectDropdown(data[0])
 }
@@ -114,13 +112,12 @@ function create_slider_element(id, name, valMin, valMax, valInit, updataCallback
 
 function create_slides_groups(data, container, imin, imax, name) {
 
-    // 添加标题
+    // add heading
     const heading = document.createElement('h3');
-    heading.className = 'text-lg font-semibold';
+    heading.className = 'text-sm py-2 font-semibold';
     heading.innerText = name;
     container.appendChild(heading);
 
-    // 添加每个参数行
     // for each key in data, getElementById(slider_ids[i]) and set min, max
     for (let i = imin; i < imax; i++) {
         const id = slider_ids[i]
@@ -137,7 +134,6 @@ function create_slides_groups(data, container, imin, imax, name) {
 }
 
 function createSliders(data) {
-    // airfoil parameters
 
     create_slides_groups(data, document.getElementById('airfoil-params'), slider_ids.length - 1, slider_ids.length, 'Sectional Airfoil Parameters');
     create_slides_groups(data, document.getElementById('wing-params'), 2, slider_ids.length - 1, 'Wing Planform Parameters');
@@ -149,7 +145,7 @@ function update_image(value, index) {
     // const element = document.getElementById(id);
     // console.log(index, 'call update');
 
-    if (currentTime - lastUpdated > updateThrottle) {
+    if (currentTime - lastUpdated > config.updateThrottle) {
         if (index < 2) {
             condition[index] = parseFloat(value);
         } 
@@ -179,7 +175,7 @@ function update_image(value, index) {
 
     // debounce of prediction
     if (predictTimer) clearTimeout(predictTimer);
-    predictTimer = setTimeout(() => update_predict(), predictDebounce);
+    predictTimer = setTimeout(() => update_predict(), config.predictDebounce);
 
 }
 

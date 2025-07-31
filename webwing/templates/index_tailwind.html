@@ -9,116 +9,120 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/numeric/1.2.6/numeric.min.js"></script>
 </head>
 
-<body class="bg-gray-100 text-gray-800">
+<body class="flex h-180 bg-gray-100 text-gray-800">
 
-    <div class="flex h-screen">
-        <!-- Sidebar -->
-        <div class="w-64 p-6 bg-white shadow-xl">
+    <!-- Sidebar -->
+    <div class="flex flex-col justify-between w-64 p-6 bg-white shadow-xl">
+        <div>
             <h2 class="text-2xl font-bold mb-4">WebWing</h2>
-            <label class="block">v0.1</label>
-            <label class="block font-medium">Author: Yunjia Yang</label>
+            <label class="block font-medium">Interactive Prediction and Design Webapp for transonic wings</label>
             <!-- Tabs -->
             <div class="flex flex-col space-y-2 mb-6 mt-6">
                 <button class="tab-btn active-tab bg-blue-500 text-white px-4 py-2 rounded-md font-medium" data-shape="pred">Prediction</button>
                 <button class="tab-btn bg-gray-200 text-gray-800 px-4 py-2 rounded-md font-medium" data-shape="dsgn">Design</button>
             </div>
+        </div>
+        <div>
             <!-- Logo -->
-            <div class="mt-6">
+            <!-- <div class="mt-6">
                 <img id="logo" class="w-full h-full bg-white rounded-xl shadow-md" src="/static/image/logo.png" alt="Logo">
+            </div> -->
+            <label class="block pt-100">v1.0</label>
+            <label class="block">Contact: https://yangyunjia.github.io/</label>
+        </div>
+    </div>
+    
+    <div class="flex flex-col w-[300px] p-1">
+        <!-- Sectional Airfoil Parameters -->
+        <div class="h-[350px] p-2">
+
+            <!-- Select -->
+            <div class="my-4 space-y-1">
+                <label for="airfoil-select" class="block text-sm font-medium text-gray-700">Select from</label>
+                <select id="airfoil-select" class="w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
+                <!-- Options inserted dynamically -->
+                </select>
             </div>
+
+            <!-- Root Thickness -->
+            <div id="airfoil-params" class="mt-2"></div>
+
+            <!-- CSTU -->
+            <div class="space-y-1">
+                <label for="cstu" class="block text-sm font-medium text-gray-700">CSTU</label>
+                <textarea id="cstu" rows="1" class="w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm resize-none"></textarea>
+            </div>
+
+            <!-- CSTL -->
+            <div class="space-y-1">
+                <label for="cstl" class="block text-sm font-medium text-gray-700">CSTL</label>
+                <textarea id="cstl" rows="1" class="w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm resize-none"></textarea>
+            </div>
+
+            <!-- moving points switch-->
+            <button id="toggle-btn" class="my-4 w-32 bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-md">
+                Modify airfoil
+            </button>
         </div>
         
-        <div class="flex flex-col w-128 p-6">
-            <!-- Sectional Airfoil Parameters -->
-            <div class="h-128 p-6">
+        <!-- wing planform parameters -->
+        <div id="wing-params" class="p-2"></div>
 
-                <!-- Select -->
-                <div class="my-4 space-y-1">
-                    <label for="airfoil-select" class="block text-sm font-medium text-gray-700">Select from</label>
-                    <select id="airfoil-select" class="w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
-                    <!-- Options inserted dynamically -->
-                    </select>
-                </div>
-
-                <!-- Root Thickness -->
-                <div id="airfoil-params" class="mt-4"></div>
-
-                <!-- CSTU -->
-                <div class="my-4 space-y-1">
-                    <label for="cstu" class="block text-sm font-medium text-gray-700">CSTU</label>
-                    <textarea id="cstu" rows="3" class="w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm resize-none"></textarea>
-                </div>
-
-                <!-- CSTL -->
-                <div class="space-y-1">
-                    <label for="cstl" class="block text-sm font-medium text-gray-700">CSTL</label>
-                    <textarea id="cstl" rows="3" class="w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm resize-none"></textarea>
-                </div>
-
-                <!-- moving points switch-->
-                <button id="toggle-btn" class="my-4 w-32 bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-md">
-                    Modify airfoil
-                </button>
-            </div>
-            
-            <!-- wing planform parameters -->
-            <div id="wing-params" class="p-6"></div>
-
-            <!--operating conditions -->
-            <div id="conditions" class="p-6"></div>
-        </div>
-
-        <div class="flex-grow">
-            <div class="flex h-128 p-6 gap-6"> 
-
-                <!-- Airfoil Geometry -->
-                <div class="w-[65%] bg-gray-50 text-gray-800 p-8">
-
-                    <h1 class="font-bold mb-4">Airfoil Geometry</h1>
-
-                    <div id="airfoil-plot" class="w-full h-[400px] bg-white rounded-xl shadow-md"></div>
-
-                </div>
-
-                <div class="w-[35%] bg-gray-50 text-gray-800 p-8">
-
-                    <h1 class="font-bold mb-4">Wing Geometry</h1>
-
-                    <div id="wing-plot" class="w-full h-[400px] bg-white rounded-xl shadow-md"></div>
-
-                </div>
-            </div>
-
-            <div class="flex h-128 p-6 gap-6"> 
-
-                <!-- Wing surface -->
-                <div class="w-[70%] bg-gray-50 text-gray-800 p-8">
-
-                    <h1 class="font-bold mb-4">wing surface</h1>
-
-                    <div id="button-container" class="flex space-x-4 pb-4"></div>
-
-                    <div id="surface-plot" class="w-full h-[400px] bg-white rounded-xl shadow-md"></div>
-                    
-                    <div id="coefficients_block" class="p-6">
-
-                        <h1 class="font-bold mb-4">Aerodynamic coefficients</h1>
-                        <pre id="coefficients" class="block text-sm font-medium text-gray-700"></pre>
-
-                    </div>
-                </div>
-
-                <div class="w-[30%] bg-gray-50 text-gray-800 p-8">
-
-                    <h1 class="font-bold mb-4">slices</h1>
-
-                    <div id="slices-plot" class="w-full space-y-2"></div>
-
-                </div>
-            </div>
-        </div>
-
+        <!--operating conditions -->
+        <div id="conditions" class="p-2"></div>
     </div>
+
+    <div class="flex-grow">
+        <div class="flex h-96 p-3 gap-3"> 
+
+            <!-- Airfoil Geometry -->
+            <div class="w-[65%] bg-gray-50 text-gray-800 p-3 flex flex-col">
+
+                <h1 class="flex-none font-bold m-2">Airfoil Geometry</h1>
+
+                <div id="airfoil-plot" class="flex-grow m-2 bg-white rounded-xl shadow-md"></div>
+
+            </div>
+
+            <div class="w-[35%] bg-gray-50 text-gray-800 p-3 flex flex-col">
+
+                <h1 class="font-bold mb-4">Wing Geometry</h1>
+
+                <div id="wing-plot" class="flex-grow m-2 bg-white rounded-xl shadow-md"></div>
+
+            </div>
+        </div>
+
+        <div class="flex flex=grow px-3 gap-3"> 
+
+            <!-- Wing surface -->
+            <div class="w-[70%] bg-gray-50 text-gray-800 p-4">
+
+                <div class="flex h-[50px] px-3 gap-3 justify-between"> 
+
+                    <h1 class="font-bold mb-4">Wing Surface</h1>
+                    <div id="button-container" class="flex space-x-6 pb-3"></div>
+                
+                </div>
+
+                <div id="surface-plot" class="w-full h-[380px] bg-white rounded-xl shadow-md"></div>
+                
+                <div id="coefficients_block" class="p-3">
+
+                    <h1 class="font-bold mb-4">Aerodynamic coefficients</h1>
+                    <pre id="coefficients" class="block text-sm font-medium text-gray-700"></pre>
+
+                </div>
+            </div>
+
+            <div class="w-[30%] bg-gray-50 text-gray-800 p-4">
+
+                <div id="slices-plot" class="w-full space-y-2"></div>
+
+            </div>
+        </div>
+    </div>
+
 
     <script src="/static/js/cst.js" defer></script>
     <script src="/static/js/adjustbar.js" defer></script>

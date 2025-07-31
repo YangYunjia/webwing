@@ -1,5 +1,4 @@
 let wingData = [], wingGeom = [];
-const maxAttempts = 20, attemptTimeout = 500; // ms
 const nSlices = 2;
 const etas = [0.2, 0.8];
 let currentCamera;
@@ -219,19 +218,17 @@ async function update_predict() {
         })
         let submitInfo = await response.json();
 
-        if (submitInfo.status == 429) {
+        if (submitInfo.status == 429 || submitInfo.status == 503) {
             document.getElementById('coefficients').innerText = 'Sever is busy... please try again later';
-        }
-
-        else {
+        } else {
             const taskID = submitInfo.task_id;
 
             // polling for results
             let attempts = 0;
             let data = null;
 
-            while (attempts < maxAttempts) {
-                await new Promise(resolve => setTimeout(resolve, attemptTimeout));
+            while (attempts < config.maxAttempts) {
+                await new Promise(resolve => setTimeout(resolve, config.attemptTimeout));
                 let check = await fetch(`/result/${taskID}`);
 
                 if (check.status == 200) {

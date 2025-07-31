@@ -19,14 +19,6 @@ templates = Jinja2Templates(directory="templates")
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# # 可选：允许跨域访问（开发调试用）
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=["*"],
-#     allow_methods=["*"],
-#     allow_headers=["*"],
-# )
-
 redis_conn = redis.StrictRedis(host="localhost", port=6379, db=0)
 
 @app.get("/", response_class=HTMLResponse)

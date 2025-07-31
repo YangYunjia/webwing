@@ -14,7 +14,7 @@ celery_app.config_from_object({
     'accept_content': ['json'],
     'timezone': 'UTC',
     'result_expires': 3600,
-    'worker_concurrency': 1  # 只允许1个GPU任务并发
+    'worker_concurrency': 1  # only one GPU
 })
 
 worker_logger = setup_logger("worker", "worker.log")
@@ -23,9 +23,11 @@ wing_api = None
 
 @worker_process_init.connect
 def init_wing_api(**kwargs):
-    """在每个 worker 子进程初始化时设置 CUDA"""
+    """
+    initialize CUDA only at the initialization
+    """
     global wing_api
-    wing_api = Wing_api(saves_folder='../../saves', device='default')  # GPU 初始化
+    wing_api = Wing_api(saves_folder='../../saves', device='default')
 
 @celery_app.task
 def predict_wing_flowfield(data):
