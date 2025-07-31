@@ -1,4 +1,6 @@
 *.tar.gz
+*.rdb
+*test_static*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -99,9 +99,3 @@ function fit_curve(x, y, n_cst = 7, xn1 = 0.5, xn2 = 1.0) {
     const coef = numeric.solve(ATA, ATb);
     return coef;
 }
-
-function cst_foil_fit(xu, yu, xl, yl, n_cst = 7, xn1 = 0.5, xn2 = 1.0) {
-    const cst_u = fit_curve(xu, yu, n_cst, xn1, xn2);
-    const cst_l = fit_curve(xl, yl, n_cst, xn1, xn2);
-    return [cst_u, cst_l];
-}

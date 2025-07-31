@@ -1,7 +1,4 @@
 
-const slider_names = ['AoA', 'Mach', 'Sweep angle', 'Dihedral angle', 'Aspect ratio', 'tapper-ratio', 'tip-angle', 'thickness-ratio', 'root-thickness'];
-const slider_ids   = ['aoa', 'mach', 'swept-angle', 'dihedral-angle', 'aspect-ratio', 'tapper-ratio', 'tip-angle', 'thickness-ratio', 'root-thickness'];
-const value_ids    = Array.from({ length: slider_ids.length }, (_, i) => slider_ids[i] + '-value');
 const DEGREE       = Math.PI / 180
 
 let cstu = [], cstl = [], t = 0.0;
@@ -9,25 +6,28 @@ let planform = [], condition = [];
 // [sa0, da0, ar, tr, tw, tcr]
 
 let lastUpdated = 0;
-let updateThrottle = 20; //ms
 let predictTimer = null;
-let predictDebounce = 500; //ms
 
 async function selectDropdown(data) {
 
     // get parameters from value
-    condition = data.slice(1, 3);
-    planform = data.slice(3, 9);
-    cstu = data.slice(11, 21);
-    cstl = data.slice(21, 31);
-    t    = data[10];
+    condition = data.slice(0, 2);
+    planform = data.slice(2, 8);
+    cstu = data.slice(9, 19);
+    cstl = data.slice(19, 29);
+    t    = data[8];
 
     // update every bar and box
-    inputs = condition.concat(planform)
-    for (let i = 0; i < value_ids.length - 1; i++) {
-        document.getElementById(value_ids[i]).value  = inputs[i];
-        document.getElementById(slider_ids[i]).value = inputs[i];
+    inputs = condition.concat(planform).concat([t]);
+
+    for (groupKey in parameterConfig) {
+        for (key in parameterConfig[groupKey]) {
+            const id = key.replace(/ /g, "-")
+            document.getElementById(id).value  = inputs[parameterConfig[groupKey][key].index-1];
+            document.getElementById(`${id}-value`).value  = inputs[parameterConfig[groupKey][key].index-1];
+        }
     }
+
     update_bar_values_airfoil();
     update_airfoil();
     update_wing_frame();
@@ -38,9 +38,9 @@ async function selectDropdown(data) {
 // construct the dropdown
 async function createDropdown(data) {
     const dropdown = document.getElementById('airfoil-select');
-    dropdown.innerHTML = ''; // 清空之前的选项
+    dropdown.innerHTML = ''; // clear former selection
 
-    // 遍历 wingindex.json 中的键并创建选项
+    // create selections from data
     for (let key in data) {
         if (data.hasOwnProperty(key)) {
             const option = document.createElement('option');
@@ -49,9 +49,9 @@ async function createDropdown(data) {
             dropdown.appendChild(option);
         }
     }
-    // 添加change事件监听器，当用户选择新值时，自动更新滑动条
+    // add listener to dropdown box
     dropdown.addEventListener('change', function () {selectDropdown(data[dropdown.value])});
-    await selectDropdown(data[0])
+    await selectDropdown(data['DPW-W1'])
 }
 
 // Construct sliders
@@ -112,36 +112,34 @@ function create_slider_element(id, name, valMin, valMax, valInit, updataCallback
     return wrapper
 }
 
-function create_slides_groups(data, container, imin, imax, name) {
+function create_slides_groups(data, container, name) {
 
-    // 添加标题
+    // add heading
     const heading = document.createElement('h3');
-    heading.className = 'text-lg font-semibold';
+    heading.className = 'text-sm py-2 font-semibold';
     heading.innerText = name;
     container.appendChild(heading);
 
-    // 添加每个参数行
-    // for each key in data, getElementById(slider_ids[i]) and set min, max
-    for (let i = imin; i < imax; i++) {
-        const id = slider_ids[i]
-        const valMin = data[i + 1].min
-        const valMax = data[i + 1].max
-        console.log(i, id)
+    // for each key in data, create slide and set min, max
+    for (let key in data) {
+        if (data.hasOwnProperty(key)) {
+            const id = key.replace(/ /g, "-");
+            const valMin = data[key].min;
+            const valMax = data[key].max;
 
-        wrapper = create_slider_element(id, slider_names[i], valMin, valMax, valMin, 
-            value => update_image(value, i)
-        )
-
-        container.appendChild(wrapper);
+            wrapper = create_slider_element(id, key, valMin, valMax, valMin, 
+                value => update_image(value, data[key].index - 1)
+            )
+            container.appendChild(wrapper);
+        }
     }
 }
 
-function createSliders(data) {
-    // airfoil parameters
+function createSliders() {
 
-    create_slides_groups(data, document.getElementById('airfoil-params'), slider_ids.length - 1, slider_ids.length, 'Sectional Airfoil Parameters');
-    create_slides_groups(data, document.getElementById('wing-params'), 2, slider_ids.length - 1, 'Wing Planform Parameters');
-    create_slides_groups(data, document.getElementById('conditions'), 0, 2, 'Operating Conditions');
+    create_slides_groups(parameterConfig.airfoil, document.getElementById('airfoil-params'), 'Sectional Airfoil Parameters');
+    create_slides_groups(parameterConfig.planform, document.getElementById('wing-params'), 'Wing Planform Parameters');
+    create_slides_groups(parameterConfig.condition, document.getElementById('conditions'), 'Operating Conditions');
 }
 
 function update_image(value, index) {
@@ -149,7 +147,7 @@ function update_image(value, index) {
     // const element = document.getElementById(id);
     // console.log(index, 'call update');
 
-    if (currentTime - lastUpdated > updateThrottle) {
+    if (currentTime - lastUpdated > config.updateThrottle) {
         if (index < 2) {
             condition[index] = parseFloat(value);
         } 
@@ -179,7 +177,7 @@ function update_image(value, index) {
 
     // debounce of prediction
     if (predictTimer) clearTimeout(predictTimer);
-    predictTimer = setTimeout(() => update_predict(), predictDebounce);
+    predictTimer = setTimeout(() => update_predict(), config.predictDebounce);
 
 }
 

@@ -1,0 +1,6 @@
+{
+    "updateThrottle": 20, 
+    "predictDebounce": 200,
+    "maxAttempts": 10,
+    "attemptTimeout": 200
+}
