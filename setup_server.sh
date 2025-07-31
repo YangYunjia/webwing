@@ -10,7 +10,8 @@ fi
 
 # install prerequirements
 pip install einops numpy scipy tqdm
-pip install flask
+pip install fastapi celery redis uvicorn
+sudo apt install nginx certbot python3-certbot-nginx redis-server uvicorn
 
 # MUST CHANGE TO CORRECT CUDA VERSION 
 pip3 install torch --index-url https://download.pytorch.org/whl/cu118
@@ -28,3 +29,4 @@ cd ..
 
 # clone main project
 # git clone https://github.com/YangYunjia/webwing.git -b dev
+

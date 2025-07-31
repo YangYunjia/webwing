@@ -53,9 +53,11 @@ $SUDO systemctl enable uvicorn
 $SUDO systemctl enable celery
 $SUDO systemctl start uvicorn
 $SUDO systemctl start celery
+$SUDO systemctl start redis
 
 # === Show service status ===
 echo ""
 echo "Service status:"
 $SUDO systemctl status uvicorn --no-pager
 $SUDO systemctl status celery --no-pager
+$SUDO systemctl status redis
