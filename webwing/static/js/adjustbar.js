@@ -1,7 +1,4 @@
 
-const slider_names = ['AoA', 'Mach', 'Sweep angle', 'Dihedral angle', 'Aspect ratio', 'tapper-ratio', 'tip-angle', 'thickness-ratio', 'root-thickness'];
-const slider_ids   = ['aoa', 'mach', 'swept-angle', 'dihedral-angle', 'aspect-ratio', 'tapper-ratio', 'tip-angle', 'thickness-ratio', 'root-thickness'];
-const value_ids    = Array.from({ length: slider_ids.length }, (_, i) => slider_ids[i] + '-value');
 const DEGREE       = Math.PI / 180
 
 let cstu = [], cstl = [], t = 0.0;
@@ -14,18 +11,23 @@ let predictTimer = null;
 async function selectDropdown(data) {
 
     // get parameters from value
-    condition = data.slice(1, 3);
-    planform = data.slice(3, 9);
-    cstu = data.slice(11, 21);
-    cstl = data.slice(21, 31);
-    t    = data[10];
+    condition = data.slice(0, 2);
+    planform = data.slice(2, 8);
+    cstu = data.slice(9, 19);
+    cstl = data.slice(19, 29);
+    t    = data[8];
 
     // update every bar and box
-    inputs = condition.concat(planform)
-    for (let i = 0; i < value_ids.length - 1; i++) {
-        document.getElementById(value_ids[i]).value  = inputs[i];
-        document.getElementById(slider_ids[i]).value = inputs[i];
+    inputs = condition.concat(planform).concat([t]);
+
+    for (groupKey in parameterConfig) {
+        for (key in parameterConfig[groupKey]) {
+            const id = key.replace(/ /g, "-")
+            document.getElementById(id).value  = inputs[parameterConfig[groupKey][key].index-1];
+            document.getElementById(`${id}-value`).value  = inputs[parameterConfig[groupKey][key].index-1];
+        }
     }
+
     update_bar_values_airfoil();
     update_airfoil();
     update_wing_frame();
@@ -49,7 +51,7 @@ async function createDropdown(data) {
     }
     // add listener to dropdown box
     dropdown.addEventListener('change', function () {selectDropdown(data[dropdown.value])});
-    await selectDropdown(data[0])
+    await selectDropdown(data['DPW-W1'])
 }
 
 // Construct sliders
@@ -110,7 +112,7 @@ function create_slider_element(id, name, valMin, valMax, valInit, updataCallback
     return wrapper
 }
 
-function create_slides_groups(data, container, imin, imax, name) {
+function create_slides_groups(data, container, name) {
 
     // add heading
     const heading = document.createElement('h3');
@@ -118,26 +120,26 @@ function create_slides_groups(data, container, imin, imax, name) {
     heading.innerText = name;
     container.appendChild(heading);
 
-    // for each key in data, getElementById(slider_ids[i]) and set min, max
-    for (let i = imin; i < imax; i++) {
-        const id = slider_ids[i]
-        const valMin = data[i + 1].min
-        const valMax = data[i + 1].max
-        console.log(i, id)
+    // for each key in data, create slide and set min, max
+    for (let key in data) {
+        if (data.hasOwnProperty(key)) {
+            const id = key.replace(/ /g, "-");
+            const valMin = data[key].min;
+            const valMax = data[key].max;
 
-        wrapper = create_slider_element(id, slider_names[i], valMin, valMax, valMin, 
-            value => update_image(value, i)
-        )
-
-        container.appendChild(wrapper);
+            wrapper = create_slider_element(id, key, valMin, valMax, valMin, 
+                value => update_image(value, data[key].index - 1)
+            )
+            container.appendChild(wrapper);
+        }
     }
 }
 
-function createSliders(data) {
+function createSliders() {
 
-    create_slides_groups(data, document.getElementById('airfoil-params'), slider_ids.length - 1, slider_ids.length, 'Sectional Airfoil Parameters');
-    create_slides_groups(data, document.getElementById('wing-params'), 2, slider_ids.length - 1, 'Wing Planform Parameters');
-    create_slides_groups(data, document.getElementById('conditions'), 0, 2, 'Operating Conditions');
+    create_slides_groups(parameterConfig.airfoil, document.getElementById('airfoil-params'), 'Sectional Airfoil Parameters');
+    create_slides_groups(parameterConfig.planform, document.getElementById('wing-params'), 'Wing Planform Parameters');
+    create_slides_groups(parameterConfig.condition, document.getElementById('conditions'), 'Operating Conditions');
 }
 
 function update_image(value, index) {

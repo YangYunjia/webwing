@@ -74,8 +74,6 @@ function show_airfoil(){
 
 function update_bar_values_airfoil() {
 
-    document.getElementById('root-thickness').value  = t;
-    document.getElementById('root-thickness-value').value = t;
     document.getElementById('cstu').value = cstu.toString();
     document.getElementById('cstl').value = cstl.toString();
 }

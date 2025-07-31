@@ -1,4 +1,5 @@
-let config = null
+let config = null;
+let parameterConfig = null;
 
 async function main() {
 
@@ -10,8 +11,9 @@ async function main() {
         ]);
 
         config = configData
+        parameterConfig = minmaxData
 
-        createSliders(minmaxData)
+        createSliders();
         create_section_slides_groups();
         create_channel_selector();
 
