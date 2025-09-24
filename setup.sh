@@ -5,7 +5,7 @@ if ! command -v git &> /dev/null; then
     sudo apt update
     sudo apt install -y git
 else
-    echo "git 已安装，跳过安装。"
+    echo "git installed"
 fi
 
 # install prerequirements

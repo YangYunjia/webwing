@@ -7,7 +7,7 @@ from flowvae.app.wing.api import Wing_api
 
 # establish the wing api instance at the beginning of the client
 # later use it to predict wing results given input parameters
-wing_api = Wing_api(saves_folder='../../saves', device='default')
+wing_api = Wing_api(saves_folder='../saves', device='default')
 results  = {}   # for fake async
 EXPIRE_SECONDS = 60
 
@@ -49,5 +49,5 @@ def clean_expired_tasks():
         del results[k]
 
 if __name__ == '__main__':
-    # app.run(host='0.0.0.0', port=80, debug=False)
-    app.run(host='0.0.0.0', port=8000, debug=True)
+    app.run(port=5000, debug=False)
+    # app.run(host='0.0.0.0', port=8000, debug=True)
