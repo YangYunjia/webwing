@@ -5,6 +5,7 @@ let cstu = [], cstl = [], t = 0.0;
 let planform = [], condition = [];
 // [sa0, da0, ar, tr, tw, tcr]
 
+let barsConfig = null;
 let lastUpdated = 0;
 let predictTimer = null;
 
@@ -20,11 +21,11 @@ async function selectDropdown(data) {
     // update every bar and box
     inputs = condition.concat(planform).concat([t]);
 
-    for (groupKey in parameterConfig) {
-        for (key in parameterConfig[groupKey]) {
+    for (groupKey in barsConfig) {
+        for (key in barsConfig[groupKey]) {
             const id = key.replace(/ /g, "-")
-            document.getElementById(id).value  = inputs[parameterConfig[groupKey][key].index-1];
-            document.getElementById(`${id}-value`).value  = inputs[parameterConfig[groupKey][key].index-1];
+            document.getElementById(id).value  = inputs[barsConfig[groupKey][key].index-1];
+            document.getElementById(`${id}-value`).value  = inputs[barsConfig[groupKey][key].index-1];
         }
     }
 
@@ -36,13 +37,13 @@ async function selectDropdown(data) {
 }
 
 // construct the dropdown
-async function createDropdown(data) {
+async function createDropdown() {
     const dropdown = document.getElementById('airfoil-select');
     dropdown.innerHTML = ''; // clear former selection
 
     // create selections from data
-    for (let key in data) {
-        if (data.hasOwnProperty(key)) {
+    for (let key in existWingParas) {
+        if (existWingParas.hasOwnProperty(key)) {
             const option = document.createElement('option');
             option.value = key;
             option.textContent = key;
@@ -50,8 +51,8 @@ async function createDropdown(data) {
         }
     }
     // add listener to dropdown box
-    dropdown.addEventListener('change', function () {selectDropdown(data[dropdown.value])});
-    await selectDropdown(data['DPW-W1'])
+    dropdown.onchange = function () {selectDropdown(existWingParas[dropdown.value])};
+    await selectDropdown(existWingParas['DPW-W1'])
 }
 
 // Construct sliders
@@ -136,10 +137,11 @@ function create_slides_groups(data, container, name) {
 }
 
 function createSliders() {
-
-    create_slides_groups(parameterConfig.airfoil, document.getElementById('airfoil-params'), 'Sectional Airfoil Parameters');
-    create_slides_groups(parameterConfig.planform, document.getElementById('wing-params'), 'Wing Planform Parameters');
-    create_slides_groups(parameterConfig.condition, document.getElementById('conditions'), 'Operating Conditions');
+    
+    barsConfig = modelConfig[activeModelVersion]['bars'];
+    create_slides_groups(barsConfig.airfoil, document.getElementById('airfoil-params'), 'Sectional Airfoil Parameters');
+    create_slides_groups(barsConfig.planform, document.getElementById('wing-params'), 'Wing Planform Parameters');
+    create_slides_groups(barsConfig.condition, document.getElementById('conditions'), 'Operating Conditions');
 }
 
 function update_image(value, index) {

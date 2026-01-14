@@ -1,18 +1,43 @@
 {
-    "airfoil": {
-        "root thickness": {"max": 0.13,"min": 0.09, "index": 9}
+    "simple": {
+        "label": "Simple wing",
+        "bars": {
+            "airfoil": {
+                "root thickness": {"max": 0.13,"min": 0.09, "index": 9}
+            },
+            "planform": {
+                "sweep angle":    {"max":35.0,"min":0.0, "index": 3},
+                "dihedral angle": {"max":3.0, "min":0.0, "index": 4},
+                "aspect ratio":   {"max":10.0,"min":6.0, "index": 5},
+                "tapper ratio":   {"max":1.0, "min":0.2, "index": 6},
+                "tip twist angle": {"max":6.0,"min":0.0, "index": 7},
+                "thickness ratio": {"max":1.0,"min":0.8, "index": 8}
+            },
+            "condition": {
+                "aoa":  {"max":6.0,  "min":1.0,  "index": 1},
+                "mach": {"max":0.85, "min":0.72, "index": 2}
+            }
+        }
     },
-    "planform": {
-        "sweep angle":    {"max":35.0,"min":0.0, "index": 3},
-        "dihedral angle": {"max":3.0, "min":0.0, "index": 4},
-        "aspect ratio":   {"max":10.0,"min":6.0, "index": 5},
-        "tapper ratio":   {"max":1.0, "min":0.2, "index": 6},
-        "tip twist angle": {"max":6.0,"min":0.0, "index": 7},
-        "thickness ratio": {"max":1.0,"min":0.8, "index": 8}
 
-    },
-    "condition": {
-        "aoa":  {"max":6.0,  "min":1.0,  "index": 1},
-        "mach": {"max":0.85, "min":0.72, "index": 2}
+    "transonic": {
+        "label": "Transonic wing",
+        "bars": {
+            "airfoil": {
+                "root thickness": {"max": 0.13,"min": 0.09, "index": 9}
+            },
+            "planform": {
+                "sweep angle":    {"max":35.0,"min":0.0, "index": 3},
+                "dihedral angle": {"max":3.0, "min":0.0, "index": 4},
+                "aspect ratio":   {"max":10.0,"min":6.0, "index": 5},
+                "tapper ratio":   {"max":1.0, "min":0.2, "index": 6},
+                "tip twist angle": {"max":6.0,"min":0.0, "index": 7},
+                "kink": {"max":1.0,"min":0.8, "index": 8}
+            },
+            "condition": {
+                "aoa":  {"max":6.0,  "min":1.0,  "index": 1},
+                "mach": {"max":0.85, "min":0.72, "index": 2}
+            }
+        }
     }
 }
