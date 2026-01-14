@@ -1,6 +1,7 @@
 *.tar.gz
 *.rdb
 *test_static*
+save/*
 saves/*
 
 # Byte-compiled / optimized / DLL files

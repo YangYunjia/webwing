@@ -4,6 +4,7 @@ const etas = [0.2, 0.8];
 let currentCamera;
 
 const buttonLabels = ['Cp', 'Cft', 'Cfz'];
+const rangesPlot2d = [[0, 5], [0, 7], [-0.1, 0.25]];
 const rangesPlot   = [[0, 5], [0, 7], [-0.5, 1.5]];
 const rangesChannel = [[1, -1.8], [-0.005, 0.015], [-0.004, 0.004]];
 const signsChannel  = [-1, 1, 1];
@@ -15,13 +16,14 @@ let activeChannel = 0;
 
 function create_camera_monitor() {
 
-    plots = ['wing-plot', 'surface-plot'];
-    plots.forEach((id, ) => {
-        document.getElementById(id).on('plotly_relayout', function(eventData) {
-            if (eventData['scene.camera']) {
-                currentCamera = eventData['scene.camera'];
-            }
-        });
+    const surfacePlot = document.getElementById('surface-plot');
+    if (!surfacePlot) {
+        return;
+    }
+    surfacePlot.on('plotly_relayout', function(eventData) {
+        if (eventData['scene.camera']) {
+            currentCamera = eventData['scene.camera'];
+        }
     });
    
 }
@@ -168,29 +170,61 @@ function reconstruct_surface_frame() {
 
 function update_wing_frame() {
 
-    const traces = reconstruct_surface_frame().map((curve, index) => ({
+    const curves = reconstruct_surface_frame();
+    const views = [
+        { id: 'wing-plot-top', xIdx: 1, yIdx: 0, xTitle: 'Y', yTitle: 'X', xRange: rangesPlot2d[0], yRange: rangesPlot2d[1] },
+        { id: 'wing-plot-front', xIdx: 1, yIdx: 2, xTitle: 'Y', yTitle: 'Z', xRange: rangesPlot2d[1], yRange: rangesPlot2d[2] },
+        { id: 'wing-plot-side', xIdx: 0, yIdx: 2, xTitle: 'X', yTitle: 'Z', xRange: rangesPlot2d[0], yRange: rangesPlot2d[2] }
+    ];
+
+    views.forEach((view) => {
+        const traces = curves.map((curve) => ({
+            type: 'scatter',
+            mode: 'lines',
+            x: curve[view.xIdx],
+            y: curve[view.yIdx],
+            line: { width: 3, color: 'black' }
+        }));
+
+        const layout = {
+            margin: { l: 35, r: 10, t: 10, b: 30 },
+            showlegend: false,
+            xaxis: {
+                title: view.xTitle,
+                range: view.xRange
+            },
+            yaxis: {
+                title: view.yTitle,
+                range: view.yRange,
+                ...(view.id === 'wing-plot-top' && { autorange: 'reversed' })
+            }
+        };
+
+        Plotly.react(view.id, traces, layout);
+    });
+
+    const traces3d = curves.map((curve) => ({
         type: 'scatter3d',
         mode: 'lines',
         x: curve[0],
         y: curve[1],
         z: curve[2],
-        line: {width: 4, color: `black`},
+        line: { width: 4, color: 'black' }
     }));
 
-    const layout = {
+    const layout3d = {
         margin: { l: 0, r: 0, t: 0, b: 0 },
         showlegend: false,
         scene: {
-            xaxis: { title: 'X', range: [0, 5] },
-            yaxis: { title: 'Y', range: [0, 7] },
-            zaxis: { title: 'Z', range: [-0.5, 1.5] },
+            xaxis: { title: 'X', range: rangesPlot[0] },
+            yaxis: { title: 'Y', range: rangesPlot[1] },
+            zaxis: { title: 'Z', range: rangesPlot[2] },
             aspectmode: 'equal',
             ...(currentCamera && { camera: currentCamera })
         }
     };
 
-    Plotly.react('wing-plot', traces, layout);
-
+    Plotly.react('wing-plot-3d', traces3d, layout3d);
 }
 
 // ================================
