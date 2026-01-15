@@ -3,6 +3,7 @@
 *test_static*
 save/*
 saves/*
+*OLD*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -122,13 +122,14 @@ function half_span(ar, tr) {
 
 function reconstruct_surface_frame() {
 
-    const hs = half_span(planform[2], planform[3]);
+    currPlanform = currentParas.planform
+    const hs = half_span(currPlanform[2], currPlanform[3]);
     const zLEs = numeric.linspace(0, hs, 5);
-    const xLEs = linear_intp(zLEs, 0, hs, 0, Math.tan(planform[0] * DEGREE) * hs)
-    const yLEs = linear_intp(zLEs, 0, hs, 0, Math.tan(planform[1] * DEGREE) * hs)
-    const thickRatios = linear_intp(zLEs, 0, hs, 1, planform[5]);
-    const twistAngles = linear_intp(zLEs, 0, hs, 0, planform[4]);
-    const chordLengths = linear_intp(zLEs, 0, hs, 1, planform[3]);
+    const xLEs = linear_intp(zLEs, 0, hs, 0, Math.tan(currPlanform[0] * DEGREE) * hs)
+    const yLEs = linear_intp(zLEs, 0, hs, 0, Math.tan(currPlanform[1] * DEGREE) * hs)
+    const thickRatios = linear_intp(zLEs, 0, hs, 1, currPlanform[5]);
+    const twistAngles = linear_intp(zLEs, 0, hs, 0, currPlanform[4]);
+    const chordLengths = linear_intp(zLEs, 0, hs, 1, currPlanform[3]);
 
     const wingFrameLines = [[xLEs, zLEs, yLEs]];
 
@@ -248,7 +249,7 @@ async function update_predict() {
         let response = await fetch('/predict_wing_flowfield', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ conditions: condition, planform: planform, cstu: cstu, cstl: cstl, t: t })
+            body: JSON.stringify(currentParas)
         })
         let submitInfo = await response.json();
 

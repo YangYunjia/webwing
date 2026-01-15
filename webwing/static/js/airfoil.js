@@ -72,16 +72,16 @@ function show_airfoil(){
     Plotly.react('airfoil-plot', plotData, layout);
 }
 
-function update_bar_values_airfoil() {
+function update_cst_boxs_values() {
 
-    document.getElementById('cstu').value = (cstu[activeAirfoilIndex] || []).toString();
-    document.getElementById('cstl').value = (cstl[activeAirfoilIndex] || []).toString();
+    document.getElementById('cstu').value = (currentParas.csts[activeSecIndex][0] || []).toString();
+    document.getElementById('cstl').value = (currentParas.csts[activeSecIndex][1] || []).toString();
 }
 
 function update_airfoil() {
 
     // console.log("display_sectional_airfoil")
-    foil = cst_foil(nn, cstu[activeAirfoilIndex], cstl[activeAirfoilIndex], x=null, t=t, tail=0.004);
+    foil = cst_foil(nn, currentParas.csts[activeSecIndex][0], currentParas.csts[activeSecIndex][1], x=null, t=currentParas.secpara[0][activeSecIndex], tail=0.004);
     xx = foil[0];
     yu = foil[1];
     yl = foil[2];
@@ -97,13 +97,8 @@ function create_airfoil_plot_motion() {
 
         if (draggedPoint > -1) {
             draggedPoint = -1;
-            if (draggedSurface === 1) {
-                cstu[activeAirfoilIndex] = fit_curve(xx, yu, n_cst=10);
-            } else {
-                cstl[activeAirfoilIndex] = fit_curve(xx, yl, n_cst=10);
-            }
-            update_bar_values_airfoil();
-            update_image(0, 100);
+            update_image(fit_curve(xx, yu, n_cst=10), 'csts', draggedSurface === 1 ? 0: 1); // 0 for upper, 1 for lower
+            update_cst_boxs_values();
         }
         else {
             if (plotData.points.length && plotData.points[0].curveNumber > 1) {

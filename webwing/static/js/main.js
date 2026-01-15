@@ -11,7 +11,7 @@ let activeModelVersion = 'simple';
 // let cameraMonitorInitialized = false;
 
 function reset_model_ui() {
-    const containers = ['airfoil-params', 'wing-params', 'conditions', 'slices-plot', 'button-container'];
+    const containers = ['block-secpara', 'block-planform', 'block-conditions', 'slices-plot', 'button-container'];
     containers.forEach((id) => {
         const el = document.getElementById(id);
         if (el) {

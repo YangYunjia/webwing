@@ -1,61 +1,57 @@
 
 const DEGREE       = Math.PI / 180
 const coeffsPerSurface = 10;
-let activeAirfoilIndex = 0;
-let airfoilCount = 0;
+let activeSecIndex = 0;
+let sectionCount = 0;
+let sectionNames = [];
 
-let cstu = [], cstl = [], t = 0.0;
-let planform = [], condition = [];
+let currentParas = null;
+// let cstu = [], cstl = [], secParas = [];
+// let planform = [], condition = [];
 // [sa0, da0, ar, tr, tw, tcr]
 
 let barsConfig = null;
 let lastUpdated = 0;
 let predictTimer = null;
 
-async function selectDropdown(data) {
+async function update_dropdown() {
 
-    const conditionLen = Object.keys(barsConfig.condition || {}).length;
-    const planformLen = Object.keys(barsConfig.planform || {}).length;
+    // const conditionLen = Object.keys(barsConfig.condition || {}).length;
+    // const planformLen = Object.keys(barsConfig.planform   || {}).length;
+    // const secParaLen  = Object.keys(barsConfig.secpara    || {}).length;
 
-    condition = data.slice(0, conditionLen);
-    planform = data.slice(conditionLen, conditionLen + planformLen);
-    t = data[conditionLen + planformLen];
+    // -------------------------
+    // update global values here
+    // -------------------------
 
-    init_airfoil_arrays(data, conditionLen + planformLen + 1, coeffsPerSurface);
+    // condition = data['condition'];
+    // planform = data[''];
 
-    // update every bar and box
-    inputs = condition.concat(planform).concat([t]);
+    // deal with sectional parameters (x_sec1, x_sec2, ..., y_sec1, ..., cst_u_sec1, cst_l_sec1, ...)
+    // sectional parameters are stored based on variables; csts are stored based on section
+    // secParas = [];
+    // cstu = [];
+    // cstl = [];
+    // for (let i = 0; i < secParaLen; i += 1) {
+    //     const baseSecParas = conditionLen + planformLen + i * sectionCount;
+    //     const base = conditionLen + planformLen + secParaLen * sectionCount + i * coeffsPerSurface * 2;
+    //     secParas.push(data.slice(baseSecParas, baseSecParas + sectionCount));
+    //     cstu.push(data.slice(base, base + coeffsPerSurface));
+    //     cstl.push(data.slice(base + coeffsPerSurface, base + coeffsPerSurface * 2));
+    // }
 
-    for (groupKey in barsConfig) {
-        for (key in barsConfig[groupKey]) {
-            const id = key.replace(/ /g, "-")
-            document.getElementById(id).value  = inputs[barsConfig[groupKey][key].index-1];
-            document.getElementById(`${id}-value`).value  = inputs[barsConfig[groupKey][key].index-1];
-        }
-    }
+    // -------------------------
+    // update every bar and box based on global values
+    // -------------------------
+    update_bars('secpara', currentParas.secpara, true);
+    update_bars('planform', currentParas.planform, false);
+    update_bars('condition', currentParas.condition, false)
+    update_cst_boxs_values();
 
-    update_bar_values_airfoil();
     update_airfoil();
     update_wing_frame();
     await update_predict();
 
-}
-
-function init_airfoil_arrays(data, startIndex, coeffsPerSurface) {
-
-    cstu = [];
-    cstl = [];
-    for (let i = 0; i < airfoilCount; i += 1) {
-        const base = startIndex + i * coeffsPerSurface * 2;
-        cstu.push(data.slice(base, base + coeffsPerSurface));
-        cstl.push(data.slice(base + coeffsPerSurface, base + coeffsPerSurface * 2));
-    }
-
-    // const selector = document.getElementById('airfoil-index-select');
-    // if (!selector) {
-    //     return;
-    // }
-    // selector.value = `${activeAirfoilIndex}`;
 }
 
 // construct the dropdown
@@ -74,11 +70,18 @@ async function createDropdown() {
         }
     }
     // add listener to dropdown box
-    dropdown.onchange = function () {selectDropdown(existWingPara[dropdown.value])};
-    await selectDropdown(existWingPara['DPW-W1'])
+    dropdown.onchange = async function () {
+        currentParas = existWingPara[dropdown.value];
+        await update_dropdown();
+    };
+    currentParas = existWingPara['DPW-W1']
+    await update_dropdown();
 }
 
 function create_airfoil_selector(container) {
+    sectionNames = modelConfig[activeModelVersion].sections;
+    sectionCount = sectionNames.length;
+
     const wrapper = document.createElement('div');
     wrapper.className = 'my-2 space-y-1';
 
@@ -91,16 +94,16 @@ function create_airfoil_selector(container) {
     select.id = 'airfoil-index-select';
     select.className = 'w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-xs';
 
-    for (let i = 0; i < airfoilCount; i += 1) {
+    for (let i = 0; i < sectionCount; i += 1) {
         const option = document.createElement('option');
         option.value = `${i}`;
-        option.textContent = `Section ${i + 1}`;
+        option.textContent = sectionNames[i] || `Section ${i + 1}`;
         select.appendChild(option);
     }
-    select.value = `${activeAirfoilIndex}`;
+    select.value = `${activeSecIndex}`;
     select.addEventListener('change', function () {
-        activeAirfoilIndex = parseInt(select.value, 10);
-        update_bar_values_airfoil();
+        activeSecIndex = parseInt(select.value, 10);
+        update_cst_boxs_values();
         update_airfoil();
     });
 
@@ -167,27 +170,29 @@ function create_slider_element(id, name, valMin, valMax, valInit, updataCallback
     return wrapper
 }
 
-function create_slides_groups(data, container, name, extras) {
+function create_slides_groups(groupName, container, groupDispName, extras) {
 
     // add heading
     const heading = document.createElement('h3');
     heading.className = 'text-sm py-2 font-semibold';
-    heading.innerText = name;
+    heading.innerText = groupDispName;
     container.appendChild(heading);
 
     if (typeof extras === 'function') {
         extras(container);
     }
 
+    const groupConfig = barsConfig[groupName]
+
     // for each key in data, create slide and set min, max
-    for (let key in data) {
-        if (data.hasOwnProperty(key)) {
+    for (let key in groupConfig) {
+        if (groupConfig.hasOwnProperty(key)) {
             const id = key.replace(/ /g, "-");
-            const valMin = data[key].min;
-            const valMax = data[key].max;
+            const valMin = groupConfig[key].min;
+            const valMax = groupConfig[key].max;
 
             wrapper = create_slider_element(id, key, valMin, valMax, valMin, 
-                value => update_image(value, data[key].index - 1)
+                value => update_image(value, groupName, groupConfig[key].index - 1)
             )
             container.appendChild(wrapper);
         }
@@ -197,33 +202,48 @@ function create_slides_groups(data, container, name, extras) {
 function createSliders() {
     
     barsConfig = modelConfig[activeModelVersion]['bars'];
-    airfoilCount = parseInt(modelConfig[activeModelVersion].airfoil_count, 10);
 
-    create_slides_groups(barsConfig.airfoil, document.getElementById('airfoil-params'), 'Sectional Airfoil Parameters', create_airfoil_selector);
-    create_slides_groups(barsConfig.planform, document.getElementById('wing-params'), 'Wing Planform Parameters');
-    create_slides_groups(barsConfig.condition, document.getElementById('conditions'), 'Operating Conditions');
+    create_slides_groups('secpara', document.getElementById('block-secpara'), 'Sectional Airfoil Parameters', create_airfoil_selector);
+    create_slides_groups('planform', document.getElementById('block-planform'), 'Wing Planform Parameters');
+    create_slides_groups('condition', document.getElementById('block-conditions'), 'Operating Conditions');
 }
 
-function update_image(value, index) {
+function update_bars(group, values, isSec) {
+
+    for (key in barsConfig[group]) {
+        const id = key.replace(/ /g, "-");
+        let newValue = values[barsConfig[group][key].index-1];
+        if (isSec) {newValue = newValue[activeSecIndex];}
+
+        document.getElementById(id).value = newValue;
+        document.getElementById(`${id}-value`).value  = newValue;
+    }
+}
+
+
+function update_image(value, group, index) {
     const currentTime = Date.now();
     // const element = document.getElementById(id);
     // console.log(index, 'call update');
 
     if (currentTime - lastUpdated > config.updateThrottle) {
-        if (index < 2) {
-            condition[index] = parseFloat(value);
+        if (group === 'condition') {
+            currentParas.condition[index] = parseFloat(value);
         } 
-        else if (index < 8) {
-            planform[index - 2] = parseFloat(value);
+        else if (group === 'planform') {
+            currentParas.planform[index] = parseFloat(value);
             update_wing_frame();
         }
-        else if (index === 8) {
-            t = parseFloat(value);
+        else if (group === 'secpara') {
+            currentParas.secpara[index][activeSecIndex] = parseFloat(value);
             update_airfoil();
+            update_wing_frame();
         }
-        else {
-            // CSTs
+        else if (group === 'csts') {
+            // global values should be updated elsewhere
+            currentParas.csts[activeSecIndex][index] = value
             update_airfoil();
+            update_wing_frame();
         }
         // else if (index === 9) {
         // const newValues = element.value.split(",").map(parseFloat);

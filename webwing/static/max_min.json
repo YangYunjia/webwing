@@ -1,18 +1,18 @@
 {
     "simple": {
         "label": "Simple wing",
-        "airfoil_count": 1,
+        "sections": ["Baseline airfoil"],
         "bars": {
-            "airfoil": {
-                "root thickness": {"max": 0.13,"min": 0.09, "index": 9}
+            "secpara": {
+                "thickness": {"max": 0.13,"min": 0.09, "index": 1}
             },
             "planform": {
-                "sweep angle":    {"max":35.0,"min":0.0, "index": 3},
-                "dihedral angle": {"max":3.0, "min":0.0, "index": 4},
-                "aspect ratio":   {"max":10.0,"min":6.0, "index": 5},
-                "tapper ratio":   {"max":1.0, "min":0.2, "index": 6},
-                "tip twist angle": {"max":6.0,"min":0.0, "index": 7},
-                "thickness ratio": {"max":1.0,"min":0.8, "index": 8}
+                "sweep angle":    {"max":35.0,"min":0.0, "index": 1},
+                "dihedral angle": {"max":3.0, "min":0.0, "index": 2},
+                "aspect ratio":   {"max":10.0,"min":6.0, "index": 3},
+                "tapper ratio":   {"max":1.0, "min":0.2, "index": 4},
+                "tip twist angle": {"max":6.0,"min":0.0, "index": 5},
+                "thickness ratio": {"max":1.0,"min":0.8, "index": 6}
             },
             "condition": {
                 "aoa":  {"max":6.0,  "min":1.0,  "index": 1},
@@ -23,17 +23,19 @@
 
     "transonic": {
         "label": "Transonic wing",
-        "airfoil_count": 7,
+        "sections": ["Root", "Inn 1", "Kink", "Out 1", "Out 2", "Out 3", "Tip"],
         "bars": {
-            "airfoil": {
-                "root thickness": {"max": 0.13,"min": 0.09, "index": 9}
+            "secpara": {
+                "thickness": {"max": 0.17,"min": 0.10, "index": 1},
+                "dihedral": {"max": 0.15,"min": 0.0, "index": 2},
+                "twist": {"max": 4.0,"min": 0.0, "index": 3}
             },
             "planform": {
-                "sweep angle":    {"max":35.0,"min":0.0, "index": 3},
-                "dihedral angle": {"max":3.0, "min":0.0, "index": 4},
-                "aspect ratio":   {"max":10.0,"min":6.0, "index": 5},
-                "tapper ratio":   {"max":1.0, "min":0.2, "index": 6},
-                "kink": {"max":1.0,"min":0.8, "index": 8}
+                "sweep angle":    {"max":40.0,"min":25.0, "index": 1},
+                "aspect ratio":   {"max":11.0,"min":8.0, "index": 2},
+                "tapper ratio":   {"max":0.4, "min":0.15, "index": 3},
+                "kink ratio": {"max":0.42,"min":0.36, "index": 4},
+                "root adjustment ratio": {"max":1.1,"min":0.1, "index": 5}
             },
             "condition": {
                 "aoa":  {"max":6.0,  "min":1.0,  "index": 1},
