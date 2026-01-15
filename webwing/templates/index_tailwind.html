@@ -41,17 +41,17 @@
     
     <div class="flex flex-col w-[300px] p-1">
         <!-- Sectional Airfoil Parameters -->
-        <div class="h-[350px] p-2">
+        <div class="p-2">
 
             <!-- Select -->
             <div class="my-4 space-y-1">
-                <label for="airfoil-select" class="block text-sm font-medium text-gray-700">Select from</label>
-                <select id="airfoil-select" class="w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
+                <label for="wing-para-select" class="block text-sm font-medium text-gray-700">Select from</label>
+                <select id="wing-para-select" class="w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
                 <!-- Options inserted dynamically -->
                 </select>
             </div>
 
-            <!-- Root Thickness -->
+            <!-- airfoil index selection and bar parameters -->
             <div id="airfoil-params" class="mt-2"></div>
 
             <!-- CSTU -->
@@ -67,7 +67,7 @@
             </div>
 
             <!-- moving points switch-->
-            <button id="toggle-btn" class="my-4 w-32 bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-md">
+            <button id="modify-airfoil-button" class="my-4 w-32 bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-md">
                 Modify airfoil
             </button>
         </div>

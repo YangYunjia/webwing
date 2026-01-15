@@ -1,6 +1,7 @@
 {
     "simple": {
         "label": "Simple wing",
+        "airfoil_count": 1,
         "bars": {
             "airfoil": {
                 "root thickness": {"max": 0.13,"min": 0.09, "index": 9}
@@ -22,6 +23,7 @@
 
     "transonic": {
         "label": "Transonic wing",
+        "airfoil_count": 7,
         "bars": {
             "airfoil": {
                 "root thickness": {"max": 0.13,"min": 0.09, "index": 9}
@@ -31,7 +33,6 @@
                 "dihedral angle": {"max":3.0, "min":0.0, "index": 4},
                 "aspect ratio":   {"max":10.0,"min":6.0, "index": 5},
                 "tapper ratio":   {"max":1.0, "min":0.2, "index": 6},
-                "tip twist angle": {"max":6.0,"min":0.0, "index": 7},
                 "kink": {"max":1.0,"min":0.8, "index": 8}
             },
             "condition": {

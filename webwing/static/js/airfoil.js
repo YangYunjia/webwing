@@ -74,14 +74,14 @@ function show_airfoil(){
 
 function update_bar_values_airfoil() {
 
-    document.getElementById('cstu').value = cstu.toString();
-    document.getElementById('cstl').value = cstl.toString();
+    document.getElementById('cstu').value = (cstu[activeAirfoilIndex] || []).toString();
+    document.getElementById('cstl').value = (cstl[activeAirfoilIndex] || []).toString();
 }
 
 function update_airfoil() {
 
     // console.log("display_sectional_airfoil")
-    foil = cst_foil(nn, cstu, cstl, x=null, t=t, tail=0.004);
+    foil = cst_foil(nn, cstu[activeAirfoilIndex], cstl[activeAirfoilIndex], x=null, t=t, tail=0.004);
     xx = foil[0];
     yu = foil[1];
     yl = foil[2];
@@ -98,9 +98,9 @@ function create_airfoil_plot_motion() {
         if (draggedPoint > -1) {
             draggedPoint = -1;
             if (draggedSurface === 1) {
-                cstu = fit_curve(xx, yu, n_cst=10);
+                cstu[activeAirfoilIndex] = fit_curve(xx, yu, n_cst=10);
             } else {
-                cstl = fit_curve(xx, yl, n_cst=10);
+                cstl[activeAirfoilIndex] = fit_curve(xx, yl, n_cst=10);
             }
             update_bar_values_airfoil();
             update_image(0, 100);
@@ -150,7 +150,7 @@ function create_airfoil_plot_motion() {
     });
 
     // start and end modify
-    const toggleBtn = document.getElementById('toggle-btn');
+    const toggleBtn = document.getElementById('modify-airfoil-button');
     toggleBtn.addEventListener('click', function () {
         showPoints = !showPoints;
         toggleBtn.textContent = showPoints ? 'Confirm' : 'Modify airfoil';

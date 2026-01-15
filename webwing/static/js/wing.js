@@ -64,7 +64,7 @@ function create_channel_selector(){
       buttonLabels.forEach((label, index) => {
         const btn = document.createElement('button');
         btn.textContent = label;
-        btn.className = `toggle-btn px-4 py-2 rounded shadow ${
+        btn.className = `modify-airfoil-button px-4 py-2 rounded shadow ${
           index === activeChannel ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'
         }`;
 

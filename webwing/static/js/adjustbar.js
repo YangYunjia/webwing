@@ -1,5 +1,8 @@
 
 const DEGREE       = Math.PI / 180
+const coeffsPerSurface = 10;
+let activeAirfoilIndex = 0;
+let airfoilCount = 0;
 
 let cstu = [], cstl = [], t = 0.0;
 let planform = [], condition = [];
@@ -11,12 +14,14 @@ let predictTimer = null;
 
 async function selectDropdown(data) {
 
-    // get parameters from value
-    condition = data.slice(0, 2);
-    planform = data.slice(2, 8);
-    cstu = data.slice(9, 19);
-    cstl = data.slice(19, 29);
-    t    = data[8];
+    const conditionLen = Object.keys(barsConfig.condition || {}).length;
+    const planformLen = Object.keys(barsConfig.planform || {}).length;
+
+    condition = data.slice(0, conditionLen);
+    planform = data.slice(conditionLen, conditionLen + planformLen);
+    t = data[conditionLen + planformLen];
+
+    init_airfoil_arrays(data, conditionLen + planformLen + 1, coeffsPerSurface);
 
     // update every bar and box
     inputs = condition.concat(planform).concat([t]);
@@ -36,14 +41,32 @@ async function selectDropdown(data) {
 
 }
 
+function init_airfoil_arrays(data, startIndex, coeffsPerSurface) {
+
+    cstu = [];
+    cstl = [];
+    for (let i = 0; i < airfoilCount; i += 1) {
+        const base = startIndex + i * coeffsPerSurface * 2;
+        cstu.push(data.slice(base, base + coeffsPerSurface));
+        cstl.push(data.slice(base + coeffsPerSurface, base + coeffsPerSurface * 2));
+    }
+
+    // const selector = document.getElementById('airfoil-index-select');
+    // if (!selector) {
+    //     return;
+    // }
+    // selector.value = `${activeAirfoilIndex}`;
+}
+
 // construct the dropdown
 async function createDropdown() {
-    const dropdown = document.getElementById('airfoil-select');
+    const dropdown = document.getElementById('wing-para-select');
     dropdown.innerHTML = ''; // clear former selection
+    const existWingPara = existWingParas[activeModelVersion]
 
     // create selections from data
-    for (let key in existWingParas) {
-        if (existWingParas.hasOwnProperty(key)) {
+    for (let key in existWingPara) {
+        if (existWingPara.hasOwnProperty(key)) {
             const option = document.createElement('option');
             option.value = key;
             option.textContent = key;
@@ -51,8 +74,39 @@ async function createDropdown() {
         }
     }
     // add listener to dropdown box
-    dropdown.onchange = function () {selectDropdown(existWingParas[dropdown.value])};
-    await selectDropdown(existWingParas['DPW-W1'])
+    dropdown.onchange = function () {selectDropdown(existWingPara[dropdown.value])};
+    await selectDropdown(existWingPara['DPW-W1'])
+}
+
+function create_airfoil_selector(container) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'my-2 space-y-1';
+
+    const label = document.createElement('label');
+    label.setAttribute('for', 'airfoil-index-select');
+    label.className = 'block text-xs font-medium text-gray-700';
+    label.innerText = 'Section index';
+
+    const select = document.createElement('select');
+    select.id = 'airfoil-index-select';
+    select.className = 'w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-xs';
+
+    for (let i = 0; i < airfoilCount; i += 1) {
+        const option = document.createElement('option');
+        option.value = `${i}`;
+        option.textContent = `Section ${i + 1}`;
+        select.appendChild(option);
+    }
+    select.value = `${activeAirfoilIndex}`;
+    select.addEventListener('change', function () {
+        activeAirfoilIndex = parseInt(select.value, 10);
+        update_bar_values_airfoil();
+        update_airfoil();
+    });
+
+    wrapper.appendChild(label);
+    wrapper.appendChild(select);
+    container.appendChild(wrapper);
 }
 
 // Construct sliders
@@ -113,13 +167,17 @@ function create_slider_element(id, name, valMin, valMax, valInit, updataCallback
     return wrapper
 }
 
-function create_slides_groups(data, container, name) {
+function create_slides_groups(data, container, name, extras) {
 
     // add heading
     const heading = document.createElement('h3');
     heading.className = 'text-sm py-2 font-semibold';
     heading.innerText = name;
     container.appendChild(heading);
+
+    if (typeof extras === 'function') {
+        extras(container);
+    }
 
     // for each key in data, create slide and set min, max
     for (let key in data) {
@@ -139,7 +197,9 @@ function create_slides_groups(data, container, name) {
 function createSliders() {
     
     barsConfig = modelConfig[activeModelVersion]['bars'];
-    create_slides_groups(barsConfig.airfoil, document.getElementById('airfoil-params'), 'Sectional Airfoil Parameters');
+    airfoilCount = parseInt(modelConfig[activeModelVersion].airfoil_count, 10);
+
+    create_slides_groups(barsConfig.airfoil, document.getElementById('airfoil-params'), 'Sectional Airfoil Parameters', create_airfoil_selector);
     create_slides_groups(barsConfig.planform, document.getElementById('wing-params'), 'Wing Planform Parameters');
     create_slides_groups(barsConfig.condition, document.getElementById('conditions'), 'Operating Conditions');
 }
