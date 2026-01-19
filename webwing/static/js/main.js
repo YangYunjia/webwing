@@ -2,7 +2,8 @@ let existWingParas = null;
 let config = null;
 let modelConfig = null;
 
-let activeModelVersion = 'simple';
+// let activeModelVersion = 'simple';
+let activeModelVersion = 'transonic';
 
 // let isModelUpdating = false;
 // let lastModelSwitchTime = 0;

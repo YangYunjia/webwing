@@ -10,7 +10,7 @@
                 "sweep angle":    {"max":35.0,"min":0.0, "index": 1},
                 "dihedral angle": {"max":3.0, "min":0.0, "index": 2},
                 "aspect ratio":   {"max":10.0,"min":6.0, "index": 3},
-                "tapper ratio":   {"max":1.0, "min":0.2, "index": 4},
+                "taper ratio":   {"max":1.0, "min":0.2, "index": 4},
                 "tip twist angle": {"max":6.0,"min":0.0, "index": 5},
                 "thickness ratio": {"max":1.0,"min":0.8, "index": 6}
             },
@@ -31,14 +31,14 @@
                 "twist": {"max": 4.0,"min": 0.0, "index": 3}
             },
             "planform": {
-                "sweep angle":    {"max":40.0,"min":25.0, "index": 1},
-                "aspect ratio":   {"max":11.0,"min":8.0, "index": 2},
-                "tapper ratio":   {"max":0.4, "min":0.15, "index": 3},
+                "sweep angle (LE)":    {"max":40.0,"min":25.0, "index": 1},
+                "aspect ratio (trap)":   {"max":11.0,"min":8.0, "index": 2},
+                "taper ratio (trap)":   {"max":0.4, "min":0.15, "index": 3},
                 "kink ratio": {"max":0.42,"min":0.36, "index": 4},
                 "root adjustment ratio": {"max":1.1,"min":0.1, "index": 5}
             },
             "condition": {
-                "aoa":  {"max":6.0,  "min":1.0,  "index": 1},
+                "aoa":  {"max":12.0,  "min":2.0,  "index": 1},
                 "mach": {"max":0.85, "min":0.72, "index": 2}
             }
         }

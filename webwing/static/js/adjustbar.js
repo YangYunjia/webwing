@@ -6,8 +6,6 @@ let sectionCount = 0;
 let sectionNames = [];
 
 let currentParas = null;
-// let cstu = [], cstl = [], secParas = [];
-// let planform = [], condition = [];
 // [sa0, da0, ar, tr, tw, tcr]
 
 let barsConfig = null;
@@ -48,7 +46,7 @@ async function update_dropdown() {
     update_bars('condition', currentParas.condition, false)
     update_cst_boxs_values();
 
-    update_airfoil();
+    initial_airfoil_points();
     update_wing_frame();
     await update_predict();
 
@@ -74,7 +72,7 @@ async function createDropdown() {
         currentParas = existWingPara[dropdown.value];
         await update_dropdown();
     };
-    currentParas = existWingPara['DPW-W1']
+    currentParas = existWingPara[Object.keys(existWingPara)[0]];
     await update_dropdown();
 }
 
@@ -104,7 +102,7 @@ function create_airfoil_selector(container) {
     select.addEventListener('change', function () {
         activeSecIndex = parseInt(select.value, 10);
         update_cst_boxs_values();
-        update_airfoil();
+        update_airfoil_points();
     });
 
     wrapper.appendChild(label);
@@ -236,13 +234,13 @@ function update_image(value, group, index) {
         }
         else if (group === 'secpara') {
             currentParas.secpara[index][activeSecIndex] = parseFloat(value);
-            update_airfoil();
+            update_airfoil_points();
             update_wing_frame();
         }
         else if (group === 'csts') {
             // global values should be updated elsewhere
             currentParas.csts[activeSecIndex][index] = value
-            update_airfoil();
+            update_airfoil_points();
             update_wing_frame();
         }
         // else if (index === 9) {

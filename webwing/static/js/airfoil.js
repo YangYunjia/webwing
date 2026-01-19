@@ -1,7 +1,7 @@
 
 
 // plot points for the airfoil
-const nn = 501
+const nn = 201;
 let xx = [];
 let yu = [];
 let yl = [];
@@ -24,9 +24,9 @@ const yHeight = 0.25, ymax = 0.15, ymin = -0.1;
 function show_airfoil(){
 
     const plotData = [{
-        x: xx, y: yu, mode: 'lines', type: 'scatter', line: { color: 'black' },
+        x: xx, y: yu[activeSecIndex], mode: 'lines', type: 'scatter', line: { color: 'black' },
     }, {
-        x: xx, y: yl, mode: 'lines', type: 'scatter', line: { color: 'black' },
+        x: xx, y: yl[activeSecIndex], mode: 'lines', type: 'scatter', line: { color: 'black' },
     }];
     const layout = {
         xaxis: { title: 'x', range: [0, 1] },
@@ -58,8 +58,8 @@ function show_airfoil(){
         ctrlYu = [];
         for (let i = 0; i < nCtrl; i += 1) {
             ctrlX.push(xx[draggedPointIndx[i]]);
-            ctrlYu.push(yu[draggedPointIndx[i]]);
-            ctrlYl.push(yl[draggedPointIndx[i]]);
+            ctrlYu.push(yu[activeSecIndex][draggedPointIndx[i]]);
+            ctrlYl.push(yl[activeSecIndex][draggedPointIndx[i]]);
         }
 
         plotData.push({
@@ -78,13 +78,23 @@ function update_cst_boxs_values() {
     document.getElementById('cstl').value = (currentParas.csts[activeSecIndex][1] || []).toString();
 }
 
-function update_airfoil() {
+function initial_airfoil_points() {
+    // initial all airfoils
+    for (let i = 0; i < sectionCount; i++) {
+        foil = cst_foil(nn, currentParas.csts[i][0], currentParas.csts[i][1], x=null, t=currentParas.secpara[0][i], tail=0.004);
+        xx = foil[0];
+        yu.push(foil[1]);
+        yl.push(foil[2]);
+    }
+    show_airfoil();
+}
+
+function update_airfoil_points() {
 
     // console.log("display_sectional_airfoil")
     foil = cst_foil(nn, currentParas.csts[activeSecIndex][0], currentParas.csts[activeSecIndex][1], x=null, t=currentParas.secpara[0][activeSecIndex], tail=0.004);
-    xx = foil[0];
-    yu = foil[1];
-    yl = foil[2];
+    yu[activeSecIndex] = foil[1];
+    yl[activeSecIndex] = foil[2];
     show_airfoil();
 }
 

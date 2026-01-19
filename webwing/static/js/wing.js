@@ -123,30 +123,75 @@ function half_span(ar, tr) {
 function reconstruct_surface_frame() {
 
     currPlanform = currentParas.planform
-    const hs = half_span(currPlanform[2], currPlanform[3]);
-    const zLEs = numeric.linspace(0, hs, 5);
+    // for simple and transonic wings, this is trap-based AR and TR
+    let hs, zLEs, yLEs, thickRatios, twistAngles, chordLengths;
+
+    switch (activeModelVersion) {
+        case 'simple':
+            hs = half_span(currPlanform[2], currPlanform[3]);
+            zLEs = numeric.linspace(0, hs, 7);
+            yLEs = linear_intp(zLEs, 0, hs, 0, Math.tan(currPlanform[1] * DEGREE) * hs);
+            thickRatios = linear_intp(zLEs, 0, hs, 1, currPlanform[5]);
+            twistAngles = linear_intp(zLEs, 0, hs, 0, currPlanform[4]);
+            chordLengths = linear_intp(zLEs, 0, hs, 1, currPlanform[3]);
+            break;
+        case 'transonic':
+            const AR = currPlanform[1];
+            const TR = currPlanform[2];
+            const KK = currPlanform[3];
+            hs = half_span(AR, TR);
+            zLEs = numeric.linspace(0.1*hs, KK*hs, 3).concat(numeric.linspace(KK*hs, hs, 5).slice(1))
+            yLEs = currentParas.secpara[1];
+            twistAngles = currentParas.secpara[2];
+
+            const xLE_kink = Math.tan(currPlanform[0] * DEGREE) * KK * hs;
+            const chord_tip   = TR;
+            const chord_kink  = TR * KK + 1 * (1 - KK);
+            const root_adj_l  = currPlanform[4] * (xLE_kink + chord_kink - 1);
+            const chord_cabin = TR * 0.1 + 1 * (1 - 0.1) + root_adj_l * (KK - 0.1) / KK;
+            chordLengths = numeric.linspace(chord_cabin, chord_kink, 3).concat(numeric.linspace(chord_kink, chord_tip, 5).slice(1));
+            break;
+    
+        default:
+            break;
+    }
     const xLEs = linear_intp(zLEs, 0, hs, 0, Math.tan(currPlanform[0] * DEGREE) * hs)
-    const yLEs = linear_intp(zLEs, 0, hs, 0, Math.tan(currPlanform[1] * DEGREE) * hs)
-    const thickRatios = linear_intp(zLEs, 0, hs, 1, currPlanform[5]);
-    const twistAngles = linear_intp(zLEs, 0, hs, 0, currPlanform[4]);
-    const chordLengths = linear_intp(zLEs, 0, hs, 1, currPlanform[3]);
 
     const wingFrameLines = [[xLEs, zLEs, yLEs]];
 
     // get airfoil points from current xx, yl, yu
-    const _xx = [...xx].reverse().concat(xx.slice(1));
-    const _yy = [...yl].reverse().concat(yu.slice(1));
+    let _xx, _yy;
     const tailLine = [[], zLEs, []];
 
     for (let idx = 0; idx < zLEs.length; idx++) {
 
-        let xFinal = new Array(_xx.length).fill(0);
-        let yFinal = new Array(_yy.length).fill(0);
+        let xFinal = new Array(nn*2-1).fill(0);
+        let yFinal = new Array(nn*2-1).fill(0);
 
-        for (let i = 0; i < xFinal.length; i++) {
-            // scaling
-            xFinal[i] = _xx[i] * chordLengths[idx]
-            yFinal[i] = _yy[i] * thickRatios[idx]
+        switch (activeModelVersion) {
+            case 'simple':
+                _xx = [...xx].reverse().concat(xx.slice(1));
+                _yy = [...yl[0]].reverse().concat(yu[0].slice(1));
+                for (let i = 0; i < xFinal.length; i++) {
+                    // scaling
+                    xFinal[i] = _xx[i] * chordLengths[idx];
+                    yFinal[i] = _yy[i] * thickRatios[idx];
+                }
+                break;
+            
+            case 'transonic':
+                _xx = [...xx].reverse().concat(xx.slice(1));
+                _yy = [...yl[idx]].reverse().concat(yu[idx].slice(1));
+                for (let i = 0; i < xFinal.length; i++) {
+                    // scaling
+                    xFinal[i] = _xx[i] * chordLengths[idx];
+                    yFinal[i] = _yy[i];
+                    // no scaling for y-axis; since its decided by sectional CSTs
+                }
+                break;
+            
+            default:
+                break;
         }
 
         const [rotX, rotY] = rotate_Z(xFinal, yFinal, [0., 0.], twistAngles[idx] * DEGREE);
@@ -249,7 +294,7 @@ async function update_predict() {
         let response = await fetch('/predict_wing_flowfield', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(currentParas)
+            body: JSON.stringify({ver: activeModelVersion, inputs: currentParas})
         })
         let submitInfo = await response.json();
 
@@ -298,6 +343,7 @@ function update_wing_plot() {
         x: wingGeom[0], y: wingGeom[2], z: wingGeom[1],
         surfacecolor: wingData[activeChannel],
         colorscale: 'rainbow',
+        reversescale: activeChannel === 0,
         cmin: rangesChannel[activeChannel][0], cmax: rangesChannel[activeChannel][1],
         contours: {
             x: { show: false }, y: { show: false }, z: { show: false },
@@ -310,7 +356,7 @@ function update_wing_plot() {
             }
         },
         colorbar: {
-            title: 'Value',
+            title: buttonLabels[activeChannel],
             len: 0.75
         },
         caps: { x: { show: false }, y: { show: false }, z: { show: false } }

@@ -3,15 +3,18 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "True"
 
 from flask import Flask, render_template, request, jsonify
 import uuid
-from flowvae.app.wing.api import Wing_api
+from flowvae.app.wing.api import SimpleWingAPI, SuperWingAPI
 
 # establish the wing api instance at the beginning of the client
 # later use it to predict wing results given input parameters
-wing_api = Wing_api(saves_folder='../saves', device='default')
+wing_api = {
+    'simple': SimpleWingAPI(),
+    'transonic': SuperWingAPI()
+}
 results  = {}   # for fake async
 EXPIRE_SECONDS = 60
 
-app = Flask(__name__)
+app = Flask(__name__) 
 
 @app.route('/predict_wing_flowfield', methods=['POST'])
 def handle_predict_wing_flowfield():
@@ -21,7 +24,7 @@ def handle_predict_wing_flowfield():
     # get all parameters
     data = request.get_json()
     # call wing_api to predict
-    result = wing_api.end2end_predict(data)
+    result = wing_api[data['ver']].end2end_predict(data['inputs'])
     results[task_id] = (time.time(), result)
 
     return jsonify({"task_id": task_id})
