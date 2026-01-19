@@ -9,6 +9,7 @@ const rangesPlot   = [[0, 5], [0, 7], [-0.5, 1.5]];
 const rangesChannel = [[1, -1.8], [-0.005, 0.015], [-0.004, 0.004]];
 const signsChannel  = [-1, 1, 1];
 let activeChannel = 0;
+const wingFrameCamera = { eye: { x: 1.2, y: 1.2, z: 0.6 } };
 
 // ================================
 // Create components
@@ -218,7 +219,7 @@ function update_wing_frame() {
 
     const curves = reconstruct_surface_frame();
     const views = [
-        { id: 'wing-plot-top', xIdx: 1, yIdx: 0, xTitle: 'Y', yTitle: 'X', xRange: rangesPlot2d[0], yRange: rangesPlot2d[1] },
+        { id: 'wing-plot-top', xIdx: 1, yIdx: 0, xTitle: 'Y', yTitle: 'X', xRange: rangesPlot2d[1], yRange: rangesPlot2d[0] },
         { id: 'wing-plot-front', xIdx: 1, yIdx: 2, xTitle: 'Y', yTitle: 'Z', xRange: rangesPlot2d[1], yRange: rangesPlot2d[2] },
         { id: 'wing-plot-side', xIdx: 0, yIdx: 2, xTitle: 'X', yTitle: 'Z', xRange: rangesPlot2d[0], yRange: rangesPlot2d[2] }
     ];
@@ -266,7 +267,7 @@ function update_wing_frame() {
             yaxis: { title: 'Y', range: rangesPlot[1] },
             zaxis: { title: 'Z', range: rangesPlot[2] },
             aspectmode: 'equal',
-            ...(currentCamera && { camera: currentCamera })
+            camera: currentCamera || wingFrameCamera
         }
     };
 
@@ -371,7 +372,7 @@ function update_wing_plot() {
             aspectratio: {'x': rangesPlot[0][1] - rangesPlot[0][0], 'y': rangesPlot[1][1] - rangesPlot[1][0], 'z': rangesPlot[2][1] - rangesPlot[2][0]},
             ...(currentCamera && { camera: currentCamera })
         },
-        margin: { t: 0 }
+        margin: { t: 0, l: 0, r: 0, b: 0 }
     };
 
     Plotly.react('surface-plot', plotData, layout);
@@ -387,7 +388,7 @@ function update_slices(i) {
     const layout = {
         xaxis: { title: 'x'},
         yaxis: { title: 'y', range: rangesChannel[activeChannel]},
-        margin: { t: 40, l: 50, r: 30, b: 50 },
+        margin: { t: 5, l: 100, r: 80, b: 30 },
         showlegend: false,
     };
     Plotly.newPlot(`slice-plot-${i}`, plotData, layout);

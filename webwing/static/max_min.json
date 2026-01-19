@@ -39,7 +39,7 @@
             },
             "condition": {
                 "aoa":  {"max":12.0,  "min":2.0,  "index": 1},
-                "mach": {"max":0.85, "min":0.72, "index": 2}
+                "mach": {"max":0.90, "min":0.72, "index": 2}
             }
         }
     }

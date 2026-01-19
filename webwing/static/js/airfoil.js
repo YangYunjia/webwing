@@ -156,9 +156,13 @@ function create_airfoil_plot_motion() {
 
     // start and end modify
     const toggleBtn = document.getElementById('modify-airfoil-button');
+    const cstBoxes = document.getElementById('cst-boxes');
     toggleBtn.addEventListener('click', function () {
         showPoints = !showPoints;
         toggleBtn.textContent = showPoints ? 'Confirm' : 'Modify airfoil';
+        if (cstBoxes) {
+            cstBoxes.classList.toggle('hidden', !showPoints);
+        }
         show_airfoil();
     });
 

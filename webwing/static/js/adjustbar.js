@@ -81,16 +81,22 @@ function create_airfoil_selector(container) {
     sectionCount = sectionNames.length;
 
     const wrapper = document.createElement('div');
-    wrapper.className = 'my-2 space-y-1';
+    wrapper.className = 'my-2 flex';
 
     const label = document.createElement('label');
     label.setAttribute('for', 'airfoil-index-select');
-    label.className = 'block text-xs font-medium text-gray-700';
+    label.className = 'block text-xs font-medium text-gray-700 whitespace-nowrap';
     label.innerText = 'Section index';
+
+    const row = document.createElement('div');
+    row.className = 'flex items-center gap-2 flex-1';
+
+    const leftCol = document.createElement('div');
+    leftCol.className = 'flex flex-col flex-1 gap-1';
 
     const select = document.createElement('select');
     select.id = 'airfoil-index-select';
-    select.className = 'w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-xs';
+    select.className = 'flex-grow h-4 rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-xs';
 
     for (let i = 0; i < sectionCount; i += 1) {
         const option = document.createElement('option');
@@ -105,8 +111,19 @@ function create_airfoil_selector(container) {
         update_airfoil_points();
     });
 
-    wrapper.appendChild(label);
-    wrapper.appendChild(select);
+    let toggleBtn = document.getElementById('modify-airfoil-button');
+    if (!toggleBtn) {
+        toggleBtn = document.createElement('button');
+        toggleBtn.id = 'modify-airfoil-button';
+        toggleBtn.textContent = 'Modify airfoil';
+    }
+    toggleBtn.className = 'h-10 w-28 bg-blue-500 hover:bg-blue-600 text-white rounded-md';
+
+    leftCol.appendChild(label);
+    leftCol.appendChild(select);
+    row.appendChild(leftCol);
+    row.appendChild(toggleBtn);
+    wrapper.appendChild(row);
     container.appendChild(wrapper);
 }
 
