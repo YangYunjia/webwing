@@ -79,6 +79,9 @@ async function createDropdown() {
 function create_airfoil_selector(container) {
     sectionNames = modelConfig[activeModelVersion].sections;
     sectionCount = sectionNames.length;
+    if (activeSecIndex >= sectionCount) {
+        activeSecIndex = 0;
+    }
 
     const wrapper = document.createElement('div');
     wrapper.className = 'my-2 flex';

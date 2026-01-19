@@ -80,6 +80,8 @@ function update_cst_boxs_values() {
 
 function initial_airfoil_points() {
     // initial all airfoils
+    yu = [];
+    yl = [];
     for (let i = 0; i < sectionCount; i++) {
         foil = cst_foil(nn, currentParas.csts[i][0], currentParas.csts[i][1], x=null, t=currentParas.secpara[0][i], tail=0.004);
         xx = foil[0];
@@ -107,7 +109,7 @@ function create_airfoil_plot_motion() {
 
         if (draggedPoint > -1) {
             draggedPoint = -1;
-            update_image(fit_curve(xx, yu, n_cst=10), 'csts', draggedSurface === 1 ? 0: 1); // 0 for upper, 1 for lower
+            update_image(fit_curve(xx, yu[activeSecIndex], n_cst=10), 'csts', draggedSurface === 1 ? 0: 1); // 0 for upper, 1 for lower
             update_cst_boxs_values();
         }
         else {
@@ -134,9 +136,9 @@ function create_airfoil_plot_motion() {
             // const y = ymax - ((e.clientY - bb.top) / (bb.height)) * yHeight;
             x0 = xx[draggedPointIndx[draggedPoint]]
             if (draggedSurface === 1) {
-                dy = Math.max(yl[draggedPointIndx[draggedPoint]], Math.min(ymax, y)) - yu[draggedPointIndx[draggedPoint]]; // 
+                dy = Math.max(yl[activeSecIndex][draggedPointIndx[draggedPoint]], Math.min(ymax, y)) - yu[activeSecIndex][draggedPointIndx[draggedPoint]]; // 
             } else {
-                dy = Math.min(yu[draggedPointIndx[draggedPoint]], Math.max(ymin, y)) - yl[draggedPointIndx[draggedPoint]]; // 
+                dy = Math.min(yu[activeSecIndex][draggedPointIndx[draggedPoint]], Math.max(ymin, y)) - yl[activeSecIndex][draggedPointIndx[draggedPoint]]; // 
             }
             
             const range = Math.min(x0, 1 - x0, 0.2);
@@ -144,7 +146,7 @@ function create_airfoil_plot_motion() {
                 const d = Math.abs(xx[j] - x0);
                 if (d <= range) {
                     const b = Math.pow(1 - Math.pow(d / range, 2), 2);
-                    (draggedSurface === 1 ? yu : yl)[j] += dy * b;
+                    (draggedSurface === 1 ? yu[activeSecIndex] : yl[activeSecIndex])[j] += dy * b;
                 }
                 // const g = Math.exp(-Math.pow((xx[j] - x0), 2) / (2 * sigma * sigma));
                 // const w = Math.max(1 - Math.abs(xx[j] - x0) / range, 0)
