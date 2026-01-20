@@ -3,12 +3,16 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 
-from utils.models import WingInput
 from utils.log_config import setup_logger
 from tasks import predict_wing_flowfield, celery_app
 
 from celery.result import AsyncResult
 import redis
+
+from pydantic import BaseModel
+class PredictRequest(BaseModel):
+    ver: str
+    inputs: dict
 
 MAX_QUEUE_LENGTH = 5
 
@@ -27,7 +31,7 @@ async def index(request: Request):
     return templates.TemplateResponse("index_tailwind.html", {"request": request})
 
 @app.post("/predict_wing_flowfield")
-async def predict(data: WingInput):
+async def predict(data: PredictRequest):
     queue_length = redis_conn.llen("celery")
 
     if queue_length >= MAX_QUEUE_LENGTH:
