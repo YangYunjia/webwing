@@ -3,7 +3,7 @@ from utils.log_config import setup_logger
 
 from celery import Celery
 from celery.signals import worker_process_init
-from flowvae.app.wing.api import Wing_api
+from flowvae.app.wing.api import SimpleWingAPI, SuperWingAPI
 
 celery_app = Celery("tasks")
 celery_app.config_from_object({
@@ -18,8 +18,8 @@ celery_app.config_from_object({
 })
 
 worker_logger = setup_logger("worker", "worker.log")
-# 模型只初始化一次
-wing_api = None
+# only initial model once in connect
+wing_api = {}
 
 @worker_process_init.connect
 def init_wing_api(**kwargs):
@@ -27,15 +27,17 @@ def init_wing_api(**kwargs):
     initialize CUDA only at the initialization
     """
     global wing_api
-    wing_api = Wing_api(saves_folder='../../saves', device='default')
-
+    wing_api = {
+        'simple': SimpleWingAPI(),
+        'transonic': SuperWingAPI()
+    }
 @celery_app.task
 def predict_wing_flowfield(data):
     try:
         worker_logger.info(f"[START] New prediction task received")
 
         start_time = time.time()
-        results = wing_api.end2end_predict(data)
+        results = wing_api[data['ver']].end2end_predict(data['inputs'])
         duration = time.time() - start_time
 
         worker_logger.info(f"[DONE] Task completed in {duration:.2f}s")

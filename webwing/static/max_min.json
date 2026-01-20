@@ -28,7 +28,7 @@
             "secpara": {
                 "thickness": {"max": 0.17,"min": 0.10, "index": 1},
                 "dihedral": {"max": 0.15,"min": 0.0, "index": 2},
-                "twist": {"max": 4.0,"min": 0.0, "index": 3}
+                "twist": {"max": 0.0,"min": -4.0, "index": 3}
             },
             "planform": {
                 "sweep angle (LE)":    {"max":40.0,"min":25.0, "index": 1},
