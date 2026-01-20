@@ -5,12 +5,13 @@ if ! command -v git &> /dev/null; then
     sudo apt update
     sudo apt install -y git
 else
-    echo "git 已安装，跳过安装。"
+    echo "git installed"
 fi
 
 # install prerequirements
 pip install einops numpy scipy tqdm
 pip install fastapi celery redis uvicorn
+pip install huggingface_hub
 sudo apt install nginx certbot python3-certbot-nginx redis-server uvicorn
 
 # MUST CHANGE TO CORRECT CUDA VERSION 

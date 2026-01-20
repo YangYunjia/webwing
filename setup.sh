@@ -11,6 +11,7 @@ fi
 # install prerequirements
 pip install einops numpy scipy tqdm
 pip install flask
+pip install huggingface_hub
 
 # MUST CHANGE TO CORRECT CUDA VERSION 
 pip3 install torch --index-url https://download.pytorch.org/whl/cu118

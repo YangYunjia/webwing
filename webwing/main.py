@@ -11,6 +11,9 @@ import redis
 
 from pydantic import BaseModel
 class PredictRequest(BaseModel):
+    '''
+    Type define for json request, must-have for FastAPI
+    '''
     ver: str
     inputs: dict
 
