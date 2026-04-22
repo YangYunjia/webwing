@@ -1,0 +1,18 @@
+v1.1a
+
+[v1.1a] 2026-04-22
+- Update readme and user guide
+- Add DLR-F6 wing shape
+
+[v1.1] 2026-01-20
+- Update AeroTransformer
+- Update parameter logic and prefilled values
+- Update multisectional wings (kink wings)
+- Add triplane view
+
+[v1.0] 2025-07-31
+- Update UI.
+- Online deployment.
+
+[v0.1] 2024-10-25
+- Initial WebWing interactive release.

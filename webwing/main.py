@@ -9,6 +9,8 @@ from tasks import predict_wing_flowfield, celery_app
 from celery.result import AsyncResult
 import redis
 
+from app import _extract_user_guide_section, README_PATH
+
 from pydantic import BaseModel
 class PredictRequest(BaseModel):
     '''
@@ -27,6 +29,7 @@ templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 redis_conn = redis.StrictRedis(host="localhost", port=6379, db=0)
+
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
@@ -61,6 +64,19 @@ async def get_result(task_id: str):
         api_logger.error(f"[ Error ] querying result for task_id={task_id} : {str(task.info)}")
         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"state": task.state, "error": str(task.info)})
 
-@app.route("/config")
+@app.get("/config")
 def config():
     return {"mode": "server"}
+
+@app.get("/user_guide")
+async def user_guide():
+    try:
+        text = README_PATH.read_text(encoding="utf-8")
+        section_text = _extract_user_guide_section(text)
+    except OSError as exc:
+        api_logger.error("Failed to load README.md: %s", exc)
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"error": "Failed to load user guide"},
+        )
+    return {"content": section_text}

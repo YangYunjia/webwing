@@ -49,6 +49,71 @@ async function update_model_version() {
     }
 }
 
+function parseChangelogText(raw) {
+    const lines = raw.replace(/^\uFEFF/, '').split(/\r?\n/);
+    let i = 0;
+    while (i < lines.length && lines[i].trim() === '') {
+        i += 1;
+    }
+    const version = i < lines.length ? lines[i].trim() : '';
+    const body = lines.slice(i + 1).join('\n').replace(/^\s*\n/, '');
+    return { version, body: body.trim() ? body : raw.trim() };
+}
+
+function wireChangelogModal() {
+    const modal = document.getElementById('changelog-modal');
+    const closeBtn = document.getElementById('changelog-close');
+    const content = document.getElementById('changelog-content');
+    if (!modal || !closeBtn || !content) {
+        return;
+    }
+    function close() {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+    closeBtn.addEventListener('click', close);
+    modal.addEventListener('click', function (event) {
+        if (event.target === modal) {
+            close();
+        }
+    });
+    return { modal, content, open(fullText) {
+        content.textContent = fullText;
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    } };
+}
+
+async function initAppVersionAndChangelog() {
+    const versionEl = document.getElementById('app-version-label');
+    const link = document.getElementById('changelog-link');
+    if (!versionEl || !link) {
+        return;
+    }
+    const changelogUi = wireChangelogModal();
+    let fullText = '';
+    try {
+        const res = await fetch('static/CHANGELOG.txt');
+        if (!res.ok) {
+            throw new Error(String(res.status));
+        }
+        fullText = await res.text();
+        const { version } = parseChangelogText(fullText);
+        versionEl.textContent = version || '—';
+        link.addEventListener('click', function (e) {
+            e.preventDefault();
+            changelogUi?.open(fullText.trim() || '(empty)');
+        });
+    } catch (err) {
+        console.error('Failed to load CHANGELOG.txt:', err);
+        versionEl.textContent = '—';
+        link.addEventListener('click', function (e) {
+            e.preventDefault();
+            changelogUi?.open('Could not load CHANGELOG.txt.');
+        });
+    }
+}
+
 function create_model_selector() {
     const modelSelect = document.getElementById('model-select');
     if (!modelSelect) {
@@ -96,6 +161,8 @@ async function main() {
 
     }
     create_model_selector();
+    create_user_guide_modal();
+    await initAppVersionAndChangelog();
     await update_model_version();
 }
 

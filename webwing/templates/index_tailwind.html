@@ -5,6 +5,9 @@
     <meta charset="UTF-8">
     <title>WebWing</title>
     <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.6.1/github-markdown.min.css" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/markdown-it-texmath@1.0.0/css/texmath.min.css" crossorigin="anonymous">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/numeric/1.2.6/numeric.min.js"></script>
@@ -34,8 +37,14 @@
                     <!-- Options inserted dynamically -->
                 </select>
             </div>
-            <label class="block pt-100">v1.0</label>
-            <label class="block">Contact: https://yangyunjia.github.io/</label>
+            <button id="user-guide-btn" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-md text-sm font-medium">
+                User guide
+            </button>
+            <div class="block pt-100 text-sm text-gray-700 my-4">
+                <span id="app-version-label">…</span>
+                <a id="changelog-link" href="#" class="ml-2 text-blue-600 hover:text-blue-800 hover:underline">Change Log</a>
+            </div>
+            <label class="block text-sm">Code base: github.com/YangYunjia/webwing/</label>
         </div>
     </div>
     
@@ -144,10 +153,47 @@
     </div>
 
 
+    <div id="user-guide-modal" class="fixed inset-0 hidden items-center justify-center bg-black/50 z-50 p-4">
+        <div class="bg-white w-[min(96vw,56rem)] max-h-[min(90vh,48rem)] rounded-xl shadow-xl flex flex-col min-h-0">
+            <div class="flex shrink-0 items-center justify-between px-5 py-3 border-b border-gray-200">
+                <h2 class="text-lg font-semibold">User guide</h2>
+                <button id="user-guide-close" class="text-gray-500 hover:text-gray-800 text-xl leading-none">&times;</button>
+            </div>
+            <div id="user-guide-content" class="markdown-body flex-1 min-h-0 overflow-y-auto overflow-x-auto px-5 py-4 text-base"></div>
+        </div>
+    </div>
+
+    <div id="changelog-modal" class="fixed inset-0 hidden items-center justify-center bg-black/50 z-50 p-4">
+        <div class="bg-white w-[min(96vw,40rem)] max-h-[min(90vh,36rem)] rounded-xl shadow-xl flex flex-col min-h-0">
+            <div class="flex shrink-0 items-center justify-between px-5 py-3 border-b border-gray-200">
+                <h2 class="text-lg font-semibold">Change log</h2>
+                <button id="changelog-close" class="text-gray-500 hover:text-gray-800 text-xl leading-none">&times;</button>
+            </div>
+            <pre id="changelog-content" class="flex-1 min-h-0 overflow-y-auto overflow-x-auto px-5 py-4 text-sm text-gray-800 whitespace-pre-wrap font-mono"></pre>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.7/purify.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it@14.1.0/dist/markdown-it.min.js" crossorigin="anonymous"></script>
+    <script>
+        (function () {
+            var Md = typeof markdownit === 'function' ? markdownit : (typeof module !== 'undefined' && module.exports && typeof module.exports === 'function' ? module.exports : null);
+            if (Md) window.__WebWingMarkdownIt = Md;
+        })();
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
+    <script>
+        (function () {
+            var K = typeof katex !== 'undefined' && typeof katex.renderToString === 'function' ? katex : (typeof module !== 'undefined' && module.exports && typeof module.exports.renderToString === 'function' ? module.exports : null);
+            if (K) window.__WebWingKatex = K;
+        })();
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it-texmath@1.0.0/texmath.min.js" crossorigin="anonymous"></script>
     <script src="/static/js/cst.js" defer></script>
     <script src="/static/js/adjustbar.js" defer></script>
     <script src="/static/js/wing.js" defer></script>
     <script src="/static/js/airfoil.js" defer></script>
+    <script src="/static/js/userguide.js" defer></script>
     <script src="/static/js/main.js" defer></script>
 
 </body>

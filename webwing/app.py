@@ -1,6 +1,7 @@
-import os, time
+import os, re, time
 os.environ["KMP_DUPLICATE_LIB_OK"] = "True"
 
+from pathlib import Path
 from flask import Flask, render_template, request, jsonify
 import uuid
 from flowvae.app.wing.api import SimpleWingAPI, SuperWingAPI
@@ -14,7 +15,20 @@ wing_api = {
 results  = {}   # for fake async
 EXPIRE_SECONDS = 60
 
-app = Flask(__name__) 
+app = Flask(__name__)
+
+README_PATH = Path(__file__).resolve().parents[1] / "README.md"
+USER_GUIDE_MARKER = "## User guide"
+
+def _extract_user_guide_section(text: str):
+    start = text.find(USER_GUIDE_MARKER)
+    if start == -1:
+        return "User guide section not found"
+    section_text = text[start:].strip()
+    next_header = section_text.find("\n## ", len(USER_GUIDE_MARKER))
+    if next_header != -1:
+        section_text = section_text[:next_header].strip()
+    return section_text
 
 @app.route('/predict_wing_flowfield', methods=['POST'])
 def handle_predict_wing_flowfield():
@@ -44,6 +58,17 @@ def index():
 @app.route("/config")
 def config():
     return jsonify({"mode": "local"})
+
+
+@app.route("/user_guide", methods=["GET"])
+def user_guide():
+    try:
+        text = README_PATH.read_text(encoding="utf-8")
+        section_text = _extract_user_guide_section(text)
+    except OSError:
+        return jsonify({"error": "Failed to load user guide"}), 500
+
+    return jsonify({"content": section_text})
 
 def clean_expired_tasks():
     now = time.time()
