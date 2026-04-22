@@ -36,7 +36,7 @@ async def index(request: Request):
 @app.post("/predict_wing_flowfield")
 async def predict(data: PredictRequest):
     queue_length = redis_conn.llen("celery")
-
+    api_logger.info(f"Prediction request received, queue length = {queue_length}")
     if queue_length >= MAX_QUEUE_LENGTH:
         api_logger.warning(f"Prediction request refused cause reaching MAX_QUEUE_LENGTH = {MAX_QUEUE_LENGTH}")
         return JSONResponse(

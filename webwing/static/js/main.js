@@ -83,7 +83,7 @@ async function main() {
     try {
         const [data, minmaxData, configData] = await Promise.all([
             fetch('static/wingindex.json').then(res => res.json()),
-            fetch('static/max_min.json').then(res => res.json()),
+            fetch('static/parameters.json').then(res => res.json()),
             fetch('static/config.json').then(res => res.json())
         ]);
         

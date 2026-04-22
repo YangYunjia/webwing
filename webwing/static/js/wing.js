@@ -299,8 +299,8 @@ async function update_predict() {
         })
         let submitInfo = await response.json();
 
-        if (submitInfo.status == 429 || submitInfo.status == 503) {
-            document.getElementById('coefficients').innerText = 'Sever is busy... please try again later';
+        if (response.status === 429 || response.status === 503) {
+            document.getElementById('coefficients').innerText = 'Server is busy... please try again later';
         } else {
             const taskID = submitInfo.task_id;
 
