@@ -9,7 +9,7 @@ from tasks import predict_wing_flowfield, celery_app
 from celery.result import AsyncResult
 import redis
 
-from app import _extract_user_guide_section, README_PATH
+from utils import _extract_user_guide_section, HourlyTrafficStats
 
 from pydantic import BaseModel
 class PredictRequest(BaseModel):
@@ -22,6 +22,7 @@ class PredictRequest(BaseModel):
 MAX_QUEUE_LENGTH = 5
 
 api_logger = setup_logger("api", 'api.log')
+traffic_logger = setup_logger("traffic_stats", "traffic_stats.log")
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
@@ -29,10 +30,12 @@ templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 redis_conn = redis.StrictRedis(host="localhost", port=6379, db=0)
+traffic_stats = HourlyTrafficStats(redis_conn=redis_conn, traffic_logger=traffic_logger, api_logger=api_logger)
 
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
+    traffic_stats.record_home_visit()
     api_logger.info("Page loaded: /")
     return templates.TemplateResponse("index_tailwind.html", {"request": request})
 
@@ -58,9 +61,11 @@ async def get_result(task_id: str):
         api_logger.warning(f"[Pending] querying result for task_id={task_id}")
         return JSONResponse(status_code=status.HTTP_202_ACCEPTED, content={"state": task.state, "error": str(task.info)})
     elif task.state == "SUCCESS":
+        traffic_stats.record_task_result(task_id, is_success=True)
         api_logger.info(f"[Success] querying result for task_id={task_id}")
         return task.result
     else:
+        traffic_stats.record_task_result(task_id, is_success=False)
         api_logger.error(f"[ Error ] querying result for task_id={task_id} : {str(task.info)}")
         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"state": task.state, "error": str(task.info)})
 
@@ -71,8 +76,7 @@ def config():
 @app.get("/user_guide")
 async def user_guide():
     try:
-        text = README_PATH.read_text(encoding="utf-8")
-        section_text = _extract_user_guide_section(text)
+        section_text = _extract_user_guide_section()
     except OSError as exc:
         api_logger.error("Failed to load README.md: %s", exc)
         return JSONResponse(
