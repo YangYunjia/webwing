@@ -68,16 +68,17 @@ class HourlyTrafficStats:
         current_hour = now.replace(minute=0, second=0, microsecond=0)
         raw_last = self.redis_conn.get(self.last_logged_hour_key)
         if raw_last is None:
+            # Marker stores the earliest hour that still needs to be logged.
             self.redis_conn.set(self.last_logged_hour_key, self._hour_bucket(current_hour))
             return
 
         try:
-            last_logged_hour = self._parse_bucket(self._decode_redis_value(raw_last))
+            next_hour_to_log = self._parse_bucket(self._decode_redis_value(raw_last))
         except ValueError:
             self.redis_conn.set(self.last_logged_hour_key, self._hour_bucket(current_hour))
             return
 
-        log_hour = last_logged_hour + timedelta(hours=1)
+        log_hour = next_hour_to_log
         while log_hour < current_hour:
             bucket = self._hour_bucket(log_hour)
             values = self.redis_conn.hmget(

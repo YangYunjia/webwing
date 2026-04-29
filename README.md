@@ -179,3 +179,6 @@ Then, the wing-app should be able to start.
 
     go to `127.0.0.1:5000` in your browser.
 
+## Server Installation
+
+![webwing architecture](webwing/assets/webwing_architecture.png)

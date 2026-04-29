@@ -45,4 +45,5 @@ def predict_wing_flowfield(data):
     
     except Exception as e:
         worker_logger.exception(f"[ERROR] Prediction failed: {e}")
-        return {"error": str(e)}
+        # Mark the task as failed so API can return proper failure state.
+        raise RuntimeError(str(e)) from e

@@ -41,18 +41,24 @@ async def index(request: Request):
 
 @app.post("/predict_wing_flowfield")
 async def predict(data: PredictRequest):
-    queue_length = redis_conn.llen("celery")
-    api_logger.info(f"Prediction request received, queue length = {queue_length}")
-    if queue_length >= MAX_QUEUE_LENGTH:
-        api_logger.warning(f"Prediction request refused cause reaching MAX_QUEUE_LENGTH = {MAX_QUEUE_LENGTH}")
+    try:
+        queue_length = redis_conn.llen("celery")
+        api_logger.info(f"Prediction request received, queue length = {queue_length}")
+        if queue_length >= MAX_QUEUE_LENGTH:
+            api_logger.warning(f"Prediction request refused cause reaching MAX_QUEUE_LENGTH = {MAX_QUEUE_LENGTH}")
+            return JSONResponse(
+                status_code=429,
+                content={"error": "Server is busy. Try again later"}
+            )
+        task = predict_wing_flowfield.delay(data.model_dump())
+        api_logger.info(f"Prediction request received: Task_id = {task.id}")
+        return {"task_id": task.id}
+    except Exception as exc:
+        api_logger.exception("Failed to enqueue prediction task: %s", exc)
         return JSONResponse(
-            status_code=429,
-            content={"error": "Server is busy. Try again later"}
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            content={"error": "Prediction service unavailable. Please retry later."},
         )
-    
-    task = predict_wing_flowfield.delay(data.model_dump())
-    api_logger.info(f"Prediction request received: Task_id = {task.id}")
-    return {"task_id": task.id}
 
 @app.get("/result/{task_id}")
 async def get_result(task_id: str):
